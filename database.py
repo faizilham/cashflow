@@ -5,6 +5,7 @@ TRANSFER_IN_ID = 10000
 TRANSFER_OUT_ID = 20000
 ADMIN_IN_ID = 100
 ADMIN_OUT_ID = 200
+SUBCATEGORY_SIZE = 100
 
 def getID():
 	return int(time.time() * 1000)
@@ -14,6 +15,17 @@ def getFlow(_id):
 		return 1 if _id < ADMIN_OUT_ID else -1
 	else:
 		return 1 if _id < TRANSFER_OUT_ID else -1
+
+def entryObject(row):
+	return { \
+		"id": row[0], \
+		"entry_date": row[1], \
+		"account": row[2], \
+		"flow": row[3], \
+		"category_id": row[4], \
+		"amount": row[5], \
+		"details": row[6], \
+	}
 
 
 class Database(object):
@@ -80,26 +92,74 @@ class Database(object):
 
 		c.execute("SELECT * FROM accounts ORDER BY position ASC")
 		return [{"name": row[0], "position": row[1], "description": row[2]} for row in c.fetchall()]
+
+	def getEntries(self, date_first=None, date_last=None, flow=None, category_id=None, limit=None):
+
+		conditions = []
+
+		def addCondition(condition_text):
+			conditions.append("(" + condition_text + ")")
+
+		start_category, end_category = None, None
+
+		if (date_first and date_last):
+			addCondition("entry_date BETWEEN :datefirst AND :datelast")
+		elif (date_first):
+			addCondition("entry_date >= :datefirst")
+		elif (date_last):
+			addCondition("entry_date <= :datelast")
+
+		if (flow):
+			addCondition("flow = :flow")
+
+		if (category_id):
+			if (category_id < TRANSFER_IN_ID):
+				start_category = category_id * SUBCATEGORY_SIZE;
+				end_category = (category_id + 1) * SUBCATEGORY_SIZE - 1;
+				addCondition("category_id BETWEEN :start_category AND :end_category")
+			else:
+				addCondition("category_id = :category_id")
+
+		querytext = "SELECT * FROM cashflow"
+
+		if len(conditions):
+			querytext += " WHERE "
+			querytext += " AND ".join(conditions)
+
+		if limit:
+			querytext += " LIMIT :limit"
+
+		c = self.cursor()
+
+		data = { \
+			"datefirst": date_first, "datelast": date_last, "flow": flow, \
+			"category_id": category_id, "start_category": start_category, \
+			"end_category": end_category, "limit": limit \
+		}
+
+		c.execute(querytext, data)
+
+		return [entryObject(row) for row in c.fetchall()]
 		
 
 """
 tables & indexes
 
-CREATE TABLE IF NOT EXISTS `accounts` ( 
-	`name` TEXT NOT NULL, 
-	`position` INTEGER NOT NULL UNIQUE, 
-	`description` TEXT, PRIMARY KEY(`name`)
-)
-
 CREATE TABLE IF NOT EXISTS `cashflow` (
 	`id`	INTEGER NOT NULL,
-	`date`	TEXT NOT NULL,
+	`entry_date`	TEXT NOT NULL,
 	`account`	TEXT NOT NULL,
 	`flow`	INTEGER NOT NULL,
 	`category_id`	INTEGER NOT NULL,
 	`amount`	INTEGER NOT NULL,
 	`details`	TEXT,
 	PRIMARY KEY(`id`)
+)
+
+CREATE TABLE IF NOT EXISTS `accounts` ( 
+	`name` TEXT NOT NULL, 
+	`position` INTEGER NOT NULL UNIQUE, 
+	`description` TEXT, PRIMARY KEY(`name`)
 )
 
 CREATE TABLE IF NOT EXISTS `categories` (
@@ -110,8 +170,8 @@ CREATE TABLE IF NOT EXISTS `categories` (
 	PRIMARY KEY(`id`)
 )
 
-CREATE INDEX IF NOT EXISTS `cashflow_date` ON `cashflow` (`date` ASC)
+CREATE INDEX IF NOT EXISTS `cashflow_date` ON `cashflow` (`entry_date` ASC)
 CREATE INDEX IF NOT EXISTS `cashflow_category` ON `cashflow` (`category_id` )
-CREATE INDEX `categories_index` ON `categories` (`id` ASC,`super` DESC)
+CREATE INDEX IF NOT EXISTS `categories_index` ON `categories` (`id` ASC,`super` DESC)
 
 """
