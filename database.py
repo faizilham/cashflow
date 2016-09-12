@@ -93,7 +93,7 @@ class Database(object):
 		c.execute("SELECT * FROM accounts ORDER BY position ASC")
 		return [{"name": row[0], "position": row[1], "description": row[2]} for row in c.fetchall()]
 
-	def getEntries(self, date_first=None, date_last=None, flow=None, category_id=None, limit=None):
+	def getEntries(self, date_first=None, date_last=None, flow=None, category_id=None, limit=None, orderby=None, asc=True):
 
 		conditions = []
 
@@ -126,6 +126,10 @@ class Database(object):
 			querytext += " WHERE "
 			querytext += " AND ".join(conditions)
 
+		if orderby:
+			querytext += " ORDER BY :orderby "
+			ordering += "ASC" if asc else "DESC"
+
 		if limit:
 			querytext += " LIMIT :limit"
 
@@ -134,7 +138,7 @@ class Database(object):
 		data = { \
 			"datefirst": date_first, "datelast": date_last, "flow": flow, \
 			"category_id": category_id, "start_category": start_category, \
-			"end_category": end_category, "limit": limit \
+			"end_category": end_category, "orderby": orderby, "limit": limit \
 		}
 
 		c.execute(querytext, data)

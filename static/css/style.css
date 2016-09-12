@@ -1,0 +1,10 @@
+body{
+	font-family: sans-serif;
+}
+.cashflow select{
+	width: 150px;
+}
+
+.cashflow #categoryinput{
+	width: 250px;	
+}
