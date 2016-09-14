@@ -22,9 +22,20 @@ def construct_blueprint(db, cache):
 	@api.route("/entries", methods=['POST'])
 	def addEntry():
 		data = request.form
-		db.addEntry(data["date"], data["account"], int(data["flow"]), int(data["category"]), int(data["amount"]), data["desc"])
+
+		if (int(data["flow"]) > 0):
+			db.addIncome(data["date"], data["account"], int(data["category"]), int(data["amount"]), data["details"])
+		else:
+			db.addExpense(data["date"], data["account"], int(data["category"]), int(data["amount"]), data["details"])
 
 		return reply(True)
+
+	@api.route("/entries/<_id>/delete", methods=['POST'])
+	def deleteEntry(_id):
+		result = db.deleteEntry(_id)
+
+		if (result): return reply(True)
+		else: return reply(None, "Entry not found")
 
 
 

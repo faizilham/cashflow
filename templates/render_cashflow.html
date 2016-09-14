@@ -1,24 +1,24 @@
 {% for item in cashflow %}
-<tr class="entry" id='entry{{item["id"]}}'>
+<tr class="entry {{ loop.cycle('oddentry', 'evenentry')}}" id='entry{{item["id"]}}'>
 	<td>{{ item["entry_date"] }}</td>
 	<td>{{ item["account"] }}</td>
 
 	{% set categoryobj = categoryDict[item["category_id"]] %}
 
 	{% if item["flow"] == 1%}
-		<td class="credit">Credit</td>
+		<td>Credit</td>
 		<td>{{ categoryobj["group"] + " - " + categoryobj["name"] }}</td>
-		<td class="credit">{{ format_money(item["amount"]) }}</td>
+		<td class="credit cashtext">{{ format_money(item["amount"]) }}</td>
 	{% else %}
-		<td class="debit">Debit</td>
+		<td>Debit</td>
 		<td>{{ categoryobj["group"] + " - " + categoryobj["name"] }}</td>
-		<td class="debit">&#40;{{ format_money(item["amount"]) }}&#41;</td>
+		<td class="debit cashtext">&#40;{{ format_money(item["amount"]) }}&#41;</td>
 	{% endif %}
 	
-	<td>{{ item["description"] }}</td>
+	<td>{{ item["details"] }}</td>
 	<td>
-		<a href="#" onclick='editEntry({{item["id"]}})'>Edit</a>
-		<a href="#" onclick='deleteEntry({{item["id"]}})'>Delete</a>
+		<!-- <a href="#" onclick='editEntry({{item["id"]}})'>Edit</a> -->
+		<a href="#" onclick='deleteEntry({{item["id"]}}, "{{item["account"]}}", {{item["amount"] * item["flow"]}})'>Delete</a>
 	</td>
 </tr>
 {% endfor %}

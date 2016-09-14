@@ -8,3 +8,44 @@ body{
 .cashflow #categoryinput{
 	width: 250px;	
 }
+
+#accountinput {
+	width: 100px;
+}
+
+#flowinput {
+	width: 100px;
+}
+
+#dateinput {
+	width: 100px;
+}
+
+.cashtext {
+	text-align: right;
+}
+
+td{
+	padding: 0.25em 0.5em;	
+}
+
+.cashflow .oddentry td{
+	background: #eee;
+}
+
+.debit {
+	color:#ff0000;
+}
+
+.hidden {
+	display: none;
+}
+
+.content {
+	display: inline-block;
+	text-align: left;
+}
+
+body {
+	text-align: center;
+}

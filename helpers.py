@@ -1,16 +1,32 @@
 SUBCATEGORY_SIZE = 100
 
 def format_money(amount):
-	return "Rp. " + str(amount)
+	negative = False
+	if amount < 0:
+		negative = True
+		amount = -amount
+
+	stramount = ""
+	while amount >= 1000:
+		thousands = str(amount % 1000)
+
+		if len(thousands) == 2: thousands = "0" + thousands
+		elif len(thousands) == 1: thousands = "00" + thousands
+
+		stramount = "," + thousands + stramount
+		amount = int(amount / 1000)
+
+	stramount = "Rp. " + str(amount) + stramount;
+
+	if negative:
+		stramount = "(" + stramount + ")"
+	
+	return stramount
 
 class Cache(object):
 	def __init__(self, db):
 		self.db = db
-		self.reloadAccounts()
 		self.reloadCategories()
-
-	def reloadAccounts(self):
-		self.accounts = self.db.getAccounts()
 
 	def reloadCategories(self):
 		self.groups = {}

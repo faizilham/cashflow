@@ -57,6 +57,9 @@ class Database(object):
 		
 		data = (_id, datetxt, account, -1, category_id, amount, details)
 		c.execute("INSERT INTO cashflow VALUES (?, ?, ?, ?, ?, ?, ?)", data)
+
+		data = (amount, account)
+		c.execute("UPDATE accounts SET fund = fund - ? WHERE name = ?", data)
 		self.commitclose(c)
 
 		return _id
@@ -66,16 +69,9 @@ class Database(object):
 		
 		data = (_id, datetxt, account, 1, category_id, amount, details)
 		c.execute("INSERT INTO cashflow VALUES (?, ?, ?, ?, ?, ?, ?)", data)
-		self.commitclose(c)
 
-		return _id
-
-	def addEntry(self, datetxt, account, flow, category_id, amount, details=None):
-		c = self.cursor(); _id = getID()
-		
-		data = (_id, datetxt, account, flow, category_id, amount, details)
-
-		c.execute("INSERT INTO cashflow VALUES (?, ?, ?, ?, ?, ?, ?)", data)
+		data = (amount, account)
+		c.execute("UPDATE accounts SET fund = fund + ? WHERE name = ?", data)
 		self.commitclose(c)
 
 		return _id
@@ -93,6 +89,31 @@ class Database(object):
 		self.commitclose(c)
 
 		return id_out, id_in
+
+	def deleteEntry(self, _id):
+		c = self.cursor();
+		
+		querydata = (_id,)
+		c.execute ("SELECT * FROM cashflow WHERE id = ?", querydata)
+		row = c.fetchone()
+
+		print(_id, row)
+
+		if not row:
+			self.close(c)
+			return False
+		
+		entry = entryObject(row)
+		flow, amount, account = entry["flow"], entry["amount"], entry["account"]
+
+		c.execute("DELETE FROM cashflow WHERE id = ?", querydata)
+
+		querydata = (flow * amount, account)
+		c.execute("UPDATE accounts SET fund = fund - ? WHERE name = ?", querydata)
+
+		self.commitclose(c)
+
+		return True
 
 	### reads
 	def getCategories(self):
@@ -119,13 +140,13 @@ class Database(object):
 		c = self.cursor()
 
 		c.execute("SELECT * FROM accounts ORDER BY position ASC")
-		result = [{"name": row[0], "position": row[1], "description": row[2]} for row in c.fetchall()]
+		result = [{"name": row[0], "position": row[1], "fund": row[2], "description": row[3]} for row in c.fetchall()]
 
 		self.close(c)
 
 		return result
 
-	def getEntries(self, date_first=None, date_last=None, flow=None, category_id=None, limit=None, orderby=None, asc=True):
+	def getEntries(self, date_first=None, date_last=None, flow=None, category_id=None, limit=None, orderby=[]):
 
 		conditions = []
 
@@ -158,9 +179,20 @@ class Database(object):
 			querytext += " WHERE "
 			querytext += " AND ".join(conditions)
 
-		if orderby:
-			querytext += " ORDER BY :orderby "
-			querytext += "ASC" if asc else "DESC"
+		if len(orderby):
+			querytext += " ORDER BY "
+			
+			for i in range(len(orderby)):
+				column = orderby[i]
+				ascending = True
+
+				if isinstance(column, tuple):
+					column, ascending = column
+
+				querytext += column + (" ASC" if ascending else " DESC")
+
+				if i < len(orderby) - 1: querytext += ", "
+
 
 		if limit:
 			querytext += " LIMIT :limit"
@@ -170,7 +202,7 @@ class Database(object):
 		data = { 
 			"datefirst": date_first, "datelast": date_last, "flow": flow, 
 			"category_id": category_id, "start_category": start_category, 
-			"end_category": end_category, "orderby": orderby, "limit": limit 
+			"end_category": end_category, "limit": limit 
 		}
 
 		c.execute(querytext, data)
@@ -198,6 +230,7 @@ CREATE TABLE IF NOT EXISTS `cashflow` (
 CREATE TABLE IF NOT EXISTS `accounts` ( 
 	`name` TEXT NOT NULL, 
 	`position` INTEGER NOT NULL UNIQUE, 
+	`fund` INTEGER NOT NULL, 
 	`description` TEXT, PRIMARY KEY(`name`)
 )
 
