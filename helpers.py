@@ -1,7 +1,7 @@
 SUBCATEGORY_SIZE = 100
 
 def format_money(amount):
-	return ""
+	return "Rp. " + str(amount)
 
 class Cache(object):
 	def __init__(self, db):

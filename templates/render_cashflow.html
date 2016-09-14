@@ -3,13 +3,15 @@
 	<td>{{ item["entry_date"] }}</td>
 	<td>{{ item["account"] }}</td>
 
+	{% set categoryobj = categoryDict[item["category_id"]] %}
+
 	{% if item["flow"] == 1%}
-		<td class="credit">credit</td>
-		<td>{{ categories[item["category_id"]]["name"] }}</td>
+		<td class="credit">Credit</td>
+		<td>{{ categoryobj["group"] + " - " + categoryobj["name"] }}</td>
 		<td class="credit">{{ format_money(item["amount"]) }}</td>
 	{% else %}
-		<td class="debit">debit</td>
-		<td>{{ item["category"] }}</td>
+		<td class="debit">Debit</td>
+		<td>{{ categoryobj["group"] + " - " + categoryobj["name"] }}</td>
 		<td class="debit">&#40;{{ format_money(item["amount"]) }}&#41;</td>
 	{% endif %}
 	

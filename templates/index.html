@@ -9,7 +9,6 @@
 	<script src="static/js/jquery.min.js"></script>
 	<script src="static/js/jquery-ui.min.js"></script>
 	<script src="static/js/chosen.jquery.min.js"></script>
-	
 {% endblock %}
 
 {% block footscript %}
@@ -17,9 +16,9 @@
 		// init datepicker
 		$("#dateinput").datepicker({"dateFormat": "yy-mm-dd"}).datepicker("setDate", new Date());
 
-		// init accounts
+		// init combo-boxes 
 		$("#accountinput").chosen();
-		$("#typeinput").chosen({"disable_search": true}).change(function () {
+		$("#flowinput").chosen({"disable_search": true}).change(function () {
 			var enabledType = $(this).val();
 			var disabledType = -enabledType;
 
@@ -35,12 +34,74 @@
 
 		$("#categoryinput").chosen({"display_disabled_options": false});
 
+		function resetForm(){
+			$("#dateinput").datepicker("setDate", new Date());
+			$("#amountinput").val("");
+			$("#descinput").val("");
 
+			var categoryinput = $("#categoryinput");
+			categoryinput.val("");
+			categoryinput.trigger("chosen:updated");
+		}
+
+		function reloadList(){
+			$.get("/entrylist", {}, function(result){
+				$(".entry").remove();
+				$(result).insertAfter($("#trform"));
+			});
+		}
+
+
+		function submitForm(){
+
+			var date = $("#dateinput").val();
+			var account = $("#accountinput").val();
+			var flow = $("#flowinput").val();
+			var category = $("#categoryinput").val();
+			var amount = $("#amountinput").val();
+			var desc = $("#descinput").val();
+
+			console.log(date, account, flow, category, amount, desc);
+
+			if (!$.isNumeric(amount)){
+				alert("Invalid amount");
+				return false;
+			} else if (isNaN(new Date(date).getTime())) {
+				alert("Invalid date format");
+				return false;
+			} else if (!category) {
+				alert("Category must not empty");
+				return false;
+			}
+
+			//resetForm();
+
+			$("#entryForm").prop("disabled", true);
+
+			$.post("/api/entries", {
+				"date": date, "account": account, "flow": flow,
+				"category": category, "amount": amount, "desc": desc
+			}, function(data){
+				$("#entryForm").prop("disabled", false);
+
+				if (data.message) {
+					alert("Error: " + data.message);
+				} else {
+					resetForm();
+					reloadList();
+				}
+							
+			}, "json");
+
+
+
+			return false;
+		}
 	</script>
 {% endblock %}
 {% block content %}
 	<table class="cashflow">
-		<tr>
+		<tr class="theader">
 			<td>Date</td>
 			<td>Account</td>
 			<td>Type</td>
@@ -50,8 +111,10 @@
 			<td></td>
 		</tr>
 
-		<form onsubmit="return false">
-		<tr>
+		<tr id="trform">
+		<fieldset id="entryForm">
+		<form onsubmit="return submitForm()">
+		
 			<td> <input id="dateinput" name="date" /> </td>
 			<td>
 				<select id="accountinput" name="account">
@@ -61,14 +124,14 @@
 				</select>
 			</td>
 			<td>
-				<select id="typeinput" name="type">
+				<select id="flowinput" name="flow">
 					<option value="1">Credit</option>
 					<option value="-1" selected>Debit</option>
 				</select>
 			</td>
 			<td>
 				<select id="categoryinput" name="category">
-					<option value="" disabled selected></option>
+					<option id="emptyselect" value="" disabled selected></option>
 					{% for category in categories %}
 					<option value="{{category['id']}}" data-flowtype="{{category['flow']}}" {{"disabled" if category['flow'] > 0 else ""}} >[{{category['group']}}] {{category['name']}}</option>
 					{% endfor %}
@@ -77,8 +140,9 @@
 			<td> <input id="amountinput" name="amount" /> </td>
 			<td> <input id="descinput" name="description" /> </td>
 			<td> <button id="addbutton">Add</button> </td>
-		</tr>
 		</form>
+		</fieldset>
+		</tr>
 
 		{% include "render_cashflow.html" %}
 	</table>

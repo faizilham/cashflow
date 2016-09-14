@@ -17,21 +17,21 @@ def getFlow(_id):
 		return 1 if _id < TRANSFER_OUT_ID else -1
 
 def entryObject(row):
-	return { \
-		"id": row[0], \
-		"entry_date": row[1], \
-		"account": row[2], \
-		"flow": row[3], \
-		"category_id": row[4], \
-		"amount": row[5], \
-		"details": row[6], \
+	return { 
+		"id": row[0], 
+		"entry_date": row[1], 
+		"account": row[2], 
+		"flow": row[3], 
+		"category_id": row[4], 
+		"amount": row[5], 
+		"details": row[6], 
 	}
 
 
 class Database(object):
 	def __init__(self, dbpath):
 		self.dbpath = dbpath
-		self.conn = sqlite3.connect(self.dbpath)
+		
 
 		#c = self.conn.cursor()
 		#c.execute("CREATE TABLE IF NOT EXISTS test(id)")
@@ -39,13 +39,17 @@ class Database(object):
 
 	### connection primitives
 	def cursor(self):
-		return self.conn.cursor()
+		conn = sqlite3.connect(self.dbpath)
+		return conn.cursor()
 
-	def commit(self):
-		self.conn.commit()
+	def commitclose(self, c):
+		conn = c.connection
+		conn.commit()
+		conn.close()
 
-	def close(self):
-		self.conn.close()
+	def close(self, c):
+		conn = c.connection
+		conn.close()
 
 	### writes
 	def addExpense(self, datetxt, account, category_id, amount, details=None):
@@ -53,14 +57,28 @@ class Database(object):
 		
 		data = (_id, datetxt, account, -1, category_id, amount, details)
 		c.execute("INSERT INTO cashflow VALUES (?, ?, ?, ?, ?, ?, ?)", data)
-		self.commit()
+		self.commitclose(c)
+
+		return _id
 
 	def addIncome(self, datetxt, account, category_id, amount, details=None):
 		c = self.cursor(); _id = getID()
 		
 		data = (_id, datetxt, account, 1, category_id, amount, details)
 		c.execute("INSERT INTO cashflow VALUES (?, ?, ?, ?, ?, ?, ?)", data)
-		self.commit()
+		self.commitclose(c)
+
+		return _id
+
+	def addEntry(self, datetxt, account, flow, category_id, amount, details=None):
+		c = self.cursor(); _id = getID()
+		
+		data = (_id, datetxt, account, flow, category_id, amount, details)
+
+		c.execute("INSERT INTO cashflow VALUES (?, ?, ?, ?, ?, ?, ?)", data)
+		self.commitclose(c)
+
+		return _id
 
 	def transfer(self, datetxt, account_from, account_to, amount, details=None):
 		c = self.cursor(); 
@@ -72,26 +90,40 @@ class Database(object):
 
 		c.execute("INSERT INTO cashflow VALUES (?, ?, ?, ?, ?, ?, ?)", data_out)
 		c.execute("INSERT INTO cashflow VALUES (?, ?, ?, ?, ?, ?, ?)", data_in)
-		self.commit()
+		self.commitclose(c)
+
+		return id_out, id_in
 
 	### reads
 	def getCategories(self):
 		c = self.cursor()
 
 		c.execute("SELECT id, name, description FROM categories WHERE super=0 ORDER BY id ASC")
-		return [{"id": row[0], "name": row[1], "description": row[2], "flow": getFlow(row[0])} for row in c.fetchall()]
+		result = [{"id": row[0], "name": row[1], "description": row[2], "flow": getFlow(row[0])} for row in c.fetchall()]
+
+		self.close(c)
+
+		return result
 
 	def getCategoryGroups(self):
 		c = self.cursor()
 
 		c.execute("SELECT id, name, description FROM categories WHERE super=1 ORDER BY id ASC")
-		return [{"id": row[0], "name": row[1], "description": row[2], "flow": getFlow(row[0])} for row in c.fetchall()]
+		result = [{"id": row[0], "name": row[1], "description": row[2], "flow": getFlow(row[0])} for row in c.fetchall()]
+
+		self.close(c)
+
+		return result
 
 	def getAccounts(self):
 		c = self.cursor()
 
 		c.execute("SELECT * FROM accounts ORDER BY position ASC")
-		return [{"name": row[0], "position": row[1], "description": row[2]} for row in c.fetchall()]
+		result = [{"name": row[0], "position": row[1], "description": row[2]} for row in c.fetchall()]
+
+		self.close(c)
+
+		return result
 
 	def getEntries(self, date_first=None, date_last=None, flow=None, category_id=None, limit=None, orderby=None, asc=True):
 
@@ -128,22 +160,25 @@ class Database(object):
 
 		if orderby:
 			querytext += " ORDER BY :orderby "
-			ordering += "ASC" if asc else "DESC"
+			querytext += "ASC" if asc else "DESC"
 
 		if limit:
 			querytext += " LIMIT :limit"
 
 		c = self.cursor()
 
-		data = { \
-			"datefirst": date_first, "datelast": date_last, "flow": flow, \
-			"category_id": category_id, "start_category": start_category, \
-			"end_category": end_category, "orderby": orderby, "limit": limit \
+		data = { 
+			"datefirst": date_first, "datelast": date_last, "flow": flow, 
+			"category_id": category_id, "start_category": start_category, 
+			"end_category": end_category, "orderby": orderby, "limit": limit 
 		}
 
 		c.execute(querytext, data)
+		result = [entryObject(row) for row in c.fetchall()]
 
-		return [entryObject(row) for row in c.fetchall()]
+		self.close(c)
+
+		return result
 		
 
 """
