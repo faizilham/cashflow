@@ -1,24 +1,13 @@
 body{
 	font-family: sans-serif;
 }
+
 .cashflow select{
-	width: 150px;
+	width: 100%;
 }
 
-.cashflow #categoryinput{
-	width: 250px;	
-}
-
-#accountinput {
-	width: 100px;
-}
-
-#flowinput {
-	width: 100px;
-}
-
-#dateinput {
-	width: 100px;
+.cashflow input{
+	width: 100%;
 }
 
 .cashtext {
@@ -26,11 +15,37 @@ body{
 }
 
 td{
-	padding: 0.25em 0.5em;	
+	padding: 0.25em 0.5em;
+}
+
+#dateinput{
+	text-align: center;
+}
+
+#amountinput{
+	text-align: right;
+}
+
+
+#trform{
+	/*display: none;*/
+}
+
+.actiontd{
+	text-align: center;
+}
+
+.theader td{
+	text-align: center;
+	font-weight: bold;
 }
 
 .entry:nth-child(odd){
 	background: #eee;
+}
+
+.entry-date{
+	text-align: center;
 }
 
 .debit {
@@ -48,4 +63,20 @@ td{
 
 body {
 	text-align: center;
+}
+
+.col1{
+	width: 120px;
+}
+
+.col2{
+	width: 275px;
+}
+
+.col3{
+	width: 170px;
+}
+
+.col4{
+	width: 250px;
 }

@@ -21,12 +21,31 @@ def construct_blueprint(db, cache):
 
 	@api.route("/entries", methods=['POST'])
 	def addEntry():
-		data = request.form
 
-		if (int(data["flow"]) > 0):
-			db.addIncome(data["date"], data["account"], int(data["category"]), int(data["amount"]), data["details"])
+		flow = int(request.form.get("flow"))
+		date = request.form.get("date")
+		account = request.form.get("account")
+		category = int(request.form.get("category"))
+		amount = int(request.form.get("amount"))
+		details = request.form.get("details")
+
+		if (flow > 0):
+			db.addIncome(date, account, category, amount, details)
 		else:
-			db.addExpense(data["date"], data["account"], int(data["category"]), int(data["amount"]), data["details"])
+			db.addExpense(date, account, category, amount, details)
+
+		return reply(True)
+
+	@api.route("/entries/transfer", methods=['POST'])
+	def addTransferEntry():
+
+		date = request.form.get("date")
+		account_from = request.form.get("account_from")
+		account_to = request.form.get("account_to")
+		amount = int(request.form.get("amount"))
+		details = request.form.get("details")
+
+		db.transfer(date, account_from, account_to, amount, details)
 
 		return reply(True)
 

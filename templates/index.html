@@ -9,6 +9,8 @@
 	<script type="text/javascript" src="static/js/jquery.min.js"></script>
 	<script type="text/javascript" src="static/js/jquery-ui.min.js"></script>
 	<script type="text/javascript" src="static/js/chosen.jquery.min.js"></script>
+	<script type="text/javascript" src="static/js/bootstrap.min.js"></script>
+
 {% endblock %}
 
 {% block footscript %}
@@ -47,32 +49,19 @@
 	<script type="text/javascript" src="static/js/main.js"></script>
 {% endblock %}
 {% block content %}
-	<button onclick="toggleSummary(this)">Open Summary</button>
-	<table class="summary hidden">
-		<tr>
-			<td></td>
-			<td>Total</td>
-			<td>This Month</td>
-		</tr>
-		{% for account in accounts %}
-		<tr>
-			<td>{{ account["name"]}}</td>
-			<td id="{{ account['name']}}-total">{{ format_money(account["fund"]) }}</td>
-			<td id="{{ account['name']}}-monthly" {% if account["current"] < 0 %} class="debit" {% endif %}>{{ format_money(account["current"]) }}</td>
-			
-		</tr>
-		{% endfor %}
-
-	</table>
+	<!--<button onclick="toggleSummary(this)">Open Summary</button>-->
+	<div>
+		<button class="btn btn-info" data-toggle="modal" data-target="#summary-modal">Summary</button>
+	</div>
 	<hr/>
 	<table class="cashflow">
 		<tr class="theader">
-			<td>Date</td>
-			<td>Account</td>
-			<td>Type</td>
-			<td>Category</td>
-			<td>Amount</td>
-			<td>Details</td>
+			<td class="col1">Date</td>
+			<td class="col1">Account</td>
+			<td class="col1">Type</td>
+			<td class="col2">Category</td>
+			<td class="col3">Amount</td>
+			<td class="col4">Details</td>
 			<td></td>
 		</tr>
 
@@ -80,7 +69,7 @@
 		<fieldset id="entryForm">
 		<form onsubmit="return submitForm()">
 		
-			<td> <input id="dateinput" name="date" /> </td>
+			<td> <input id="dateinput" name="date" autocomplete="off"/> </td>
 			<td>
 				<select id="accountinput" name="account">
 					{% for account in accounts %}
@@ -102,13 +91,46 @@
 					{% endfor %}
 				</select>
 			</td>
-			<td> <input id="amountinput" name="amount" /> </td>
+			<td> <input id="amountinput" name="amount" autocomplete="off"/> </td>
 			<td> <input id="detailsinput" name="details" /> </td>
-			<td> <button id="addbutton">Add</button> </td>
+			<td class="actiontd"> <button type="submit" id="addbutton">+</button> </td>
 		</form>
 		</fieldset>
 		</tr>
 
 		{% include "render_cashflow.html" %}
 	</table>
+ 
+	<div class="modal" id="summary-modal" role="dialog">
+		<div class="modal-dialog">
+			<!-- Modal content-->
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal">&times;</button>
+				<h4 class="modal-title">Modal Header</h4>
+			</div>
+			<div class="modal-body">
+				<table class="summary">
+					<tr>
+						<td></td>
+						<td>Total</td>
+						<td>This Month</td>
+					</tr>
+					{% for account in accounts %}
+					<tr>
+						<td>{{ account["name"]}}</td>
+						<td id="{{ account['name']}}-total">{{ format_money(account["fund"]) }}</td>
+						<td id="{{ account['name']}}-monthly" {% if account["current"] < 0 %} class="debit" {% endif %}>{{ format_money(account["current"]) }}</td>
+						
+					</tr>
+					{% endfor %}
+
+				</table>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+			</div>
+		</div>
+		</div>
+	</div>
 {% endblock %}

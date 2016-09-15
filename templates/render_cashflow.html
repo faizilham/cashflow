@@ -1,24 +1,24 @@
 {% for item in cashflow %}
 <tr class="entry" id='entry{{item["id"]}}' data-id="{{item["id"]}}">
-	<td class="entry-date">{{ item["entry_date"] }}</td>
-	<td>{{ item["account"] }}</td>
+	<td class="entry-date col1" >{{ item["entry_date"] }}</td>
+	<td class="col1">{{ item["account"] }}</td>
 
 	{% set categoryobj = categoryDict[item["category_id"]] %}
 
 	{% if item["flow"] == 1%}
-		<td>Credit</td>
-		<td>[{{ categoryobj["group"] }}] {{ categoryobj["name"] }}</td>
-		<td class="credit cashtext">{{ format_money(item["amount"]) }}</td>
+		<td class="col1">Credit</td>
+		<td class="col2">[{{ categoryobj["group"] }}] {{ categoryobj["name"] }}</td>
+		<td class="credit cashtext col3">{{ format_money(item["amount"]) }}</td>
 	{% else %}
-		<td>Debit</td>
-		<td>[{{ categoryobj["group"] }}] {{ categoryobj["name"] }}</td>
-		<td class="debit cashtext">&#40;{{ format_money(item["amount"]) }}&#41;</td>
+		<td class="col1">Debit</td>
+		<td class="col2">[{{ categoryobj["group"] }}] {{ categoryobj["name"] }}</td>
+		<td class="debit cashtext col3">&#40;{{ format_money(item["amount"]) }}&#41;</td>
 	{% endif %}
 	
-	<td>{{ item["details"] }}</td>
-	<td>
+	<td class="col4">{{ item["details"] }}</td>
+	<td class="actiontd">
 		<!-- <a href="#" onclick='editEntry({{item["id"]}})'>Edit</a> -->
-		<a href="#" onclick='deleteEntry({{item["id"]}}, "{{item["account"]}}", {{item["amount"] * item["flow"]}})'>Delete</a>
+		<a href="#" onclick='deleteEntry({{item["id"]}}, "{{item["account"]}}", {{item["amount"] * item["flow"]}})'>X</a>
 	</td>
 </tr>
 {% endfor %}
