@@ -146,7 +146,7 @@ class Database(object):
 
 		return result
 
-	def getEntries(self, date_first=None, date_last=None, flow=None, category_id=None, limit=None, orderby=[]):
+	def getEntries(self, minid=None, maxid=None, date_first=None, date_last=None, flow=None, category_id=None, limit=None, orderby=[]):
 
 		conditions = []
 
@@ -162,8 +162,11 @@ class Database(object):
 		elif (date_last):
 			addCondition("entry_date <= :datelast")
 
-		if (flow):
-			addCondition("flow = :flow")
+		if (minid): addCondition("id > :minid")
+
+		if (maxid): addCondition("id < :maxid")
+
+		if (flow):	addCondition("flow = :flow")
 
 		if (category_id):
 			if (category_id < TRANSFER_IN_ID):
@@ -202,7 +205,8 @@ class Database(object):
 		data = { 
 			"datefirst": date_first, "datelast": date_last, "flow": flow, 
 			"category_id": category_id, "start_category": start_category, 
-			"end_category": end_category, "limit": limit 
+			"end_category": end_category, "limit": limit, "minid": minid,
+			"maxid": maxid
 		}
 
 		c.execute(querytext, data)
@@ -229,7 +233,7 @@ CREATE TABLE IF NOT EXISTS `cashflow` (
 
 CREATE TABLE IF NOT EXISTS `accounts` ( 
 	`name` TEXT NOT NULL, 
-	`position` INTEGER NOT NULL UNIQUE, 
+	`position` INTEGER NOT NULL, 
 	`fund` INTEGER NOT NULL, 
 	`description` TEXT, PRIMARY KEY(`name`)
 )
@@ -244,6 +248,8 @@ CREATE TABLE IF NOT EXISTS `categories` (
 
 CREATE INDEX IF NOT EXISTS `cashflow_date` ON `cashflow` (`entry_date` ASC)
 CREATE INDEX IF NOT EXISTS `cashflow_category` ON `cashflow` (`category_id` )
+CREATE INDEX IF NOT EXISTS `cashflow_search` ON `cashflow` (`id` DESC,`entry_date` DESC)
 CREATE INDEX IF NOT EXISTS `categories_index` ON `categories` (`id` ASC,`super` DESC)
+
 
 """

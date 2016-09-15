@@ -1,17 +1,17 @@
 {% for item in cashflow %}
-<tr class="entry {{ loop.cycle('oddentry', 'evenentry')}}" id='entry{{item["id"]}}'>
-	<td>{{ item["entry_date"] }}</td>
+<tr class="entry" id='entry{{item["id"]}}' data-id="{{item["id"]}}">
+	<td class="entry-date">{{ item["entry_date"] }}</td>
 	<td>{{ item["account"] }}</td>
 
 	{% set categoryobj = categoryDict[item["category_id"]] %}
 
 	{% if item["flow"] == 1%}
 		<td>Credit</td>
-		<td>{{ categoryobj["group"] + " - " + categoryobj["name"] }}</td>
+		<td>[{{ categoryobj["group"] }}] {{ categoryobj["name"] }}</td>
 		<td class="credit cashtext">{{ format_money(item["amount"]) }}</td>
 	{% else %}
 		<td>Debit</td>
-		<td>{{ categoryobj["group"] + " - " + categoryobj["name"] }}</td>
+		<td>[{{ categoryobj["group"] }}] {{ categoryobj["name"] }}</td>
 		<td class="debit cashtext">&#40;{{ format_money(item["amount"]) }}&#41;</td>
 	{% endif %}
 	

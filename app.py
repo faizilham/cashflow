@@ -1,6 +1,6 @@
 #!python
 
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from database import Database
 from helpers import format_money, Cache
 import api, yaml
@@ -19,12 +19,22 @@ cache = Cache(db)
 apiroute = api.construct_blueprint(db, cache)
 app.register_blueprint(apiroute, url_prefix='/api')
 
+def get_entries(form={}):
+	query = {
+		"orderby": [("entry_date", False), ("id", False)]
+	}
+
+	if form.get("minid"): query["minid"] = form.get("minid")
+	if form.get("datefirst"): query["date_first"] = form.get("datefirst")
+	if form.get("datelast"): query["date_last"] = form.get("datelast")
+
+	return db.getEntries(**query)
+
 @app.route("/")
 def index_page():
 	accounts = db.getAccounts()
 
-	order = [("entry_date", False), ("id", False)]
-	cashflow = db.getEntries(orderby=order)
+	cashflow = get_entries(request.args)
 
 	for account in accounts:
 		account["current"] = sum((entry["flow"] * entry["amount"]) for entry in cashflow if entry["account"] == account["name"])
@@ -33,9 +43,8 @@ def index_page():
 
 @app.route("/entrylist")
 def entrylist_page():
+	cashflow = get_entries(request.args)
 
-	order = [("entry_date", False), ("id", False)]
-	cashflow = db.getEntries(orderby=order)
 	return render_template("render_cashflow.html", format_money=format_money, cashflow=cashflow, categoryDict=cache.categoryDict)
 	
 if __name__ == "__main__":

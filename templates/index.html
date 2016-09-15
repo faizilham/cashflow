@@ -6,13 +6,13 @@
 	<link rel="stylesheet" href="static/css/chosen.min.css" type="text/css" />
 	<link rel="stylesheet" href="static/css/style.css" type="text/css" />
 
-	<script src="static/js/jquery.min.js"></script>
-	<script src="static/js/jquery-ui.min.js"></script>
-	<script src="static/js/chosen.jquery.min.js"></script>
+	<script type="text/javascript" src="static/js/jquery.min.js"></script>
+	<script type="text/javascript" src="static/js/jquery-ui.min.js"></script>
+	<script type="text/javascript" src="static/js/chosen.jquery.min.js"></script>
 {% endblock %}
 
 {% block footscript %}
-	<script>
+	<script type="text/javascript">
 		// init datepicker
 		$("#dateinput").datepicker({"dateFormat": "yy-mm-dd"}).datepicker("setDate", new Date());
 
@@ -42,150 +42,9 @@
 			"current": {{ account["current"] }}
 		};
 		{% endfor %}
-
-		// functions
-
-		function formatMoney(amount){
-			var negative = false;
-			if (amount < 0){
-				negative = true;
-				amount = -amount;
-			}
-
-			stramount = "";
-			while (amount >= 1000) {
-				thousands = String(amount % 1000)
-
-				if (thousands.length == 2) thousands = "0" + thousands
-				else if (thousands.length == 1) thousands = "00" + thousands
-
-				stramount = "," + thousands + stramount
-				amount = Math.round(amount / 1000)
-			}
-
-			stramount = "Rp. " + amount + stramount;
-
-			if (negative){
-				stramount = "(" + stramount + ")";
-			}
-
-			return stramount;
-		}
-
-		function resetForm(){
-			$("#dateinput").datepicker("setDate", new Date());
-			$("#amountinput").val("");
-			$("#detailsinput").val("");
-
-			var categoryinput = $("#categoryinput");
-			categoryinput.val("");
-			categoryinput.trigger("chosen:updated");
-		}
-
-		function reloadList(){
-			$.get("/entrylist", {}, function(result){
-				$(".entry").remove();
-				$(result).insertAfter($("#trform"));
-			});
-		}
-
-		function calculateSummary(account, absoluteAmount){
-			var monthly = $("#" + account + "-monthly");
-
-			accounts[account].fund += absoluteAmount;
-			accounts[account].current += absoluteAmount;
-
-			$("#" + account + "-total").html(formatMoney(accounts[account].fund));
-			monthly.html(formatMoney(accounts[account].current));
-
-			
-			if (accounts[account].current < 0){
-				monthly.addClass("debit");
-			} else {
-				monthly.removeClass("debit");
-			}
-		}
-
-
-		function submitForm(){
-
-			var date = $("#dateinput").val();
-			var account = $("#accountinput").val();
-			var flow = $("#flowinput").val();
-			var category = $("#categoryinput").val();
-			var amount = $("#amountinput").val();
-			var details = $("#detailsinput").val();
-
-			console.log(date, account, flow, category, amount, details);
-
-			if (!$.isNumeric(amount) || amount <= 0){
-				alert("Invalid amount");
-				return false;
-			} else if (isNaN(new Date(date).getTime())) {
-				alert("Invalid date format");
-				return false;
-			} else if (!category) {
-				alert("Category must not empty");
-				return false;
-			}
-
-			//resetForm();
-
-			$("#entryForm").prop("disabled", true);
-
-			$.post("/api/entries", {
-				"date": date, "account": account, "flow": flow,
-				"category": category, "amount": amount, "details": details
-			}, function(data){
-				$("#entryForm").prop("disabled", false);
-
-				if (data.message) {
-					alert("Error: " + data.message);
-				} else {
-					var absoluteAmount = flow * amount;
-
-					calculateSummary(account, absoluteAmount);
-					resetForm();
-					reloadList();
-				}
-							
-			}, "json");
-
-
-
-			return false;
-		}
-
-		function deleteEntry(_id, account, absoluteAmount){
-			if (confirm("Delete this entry?")){
-				$.post("/api/entries/" + _id + "/delete", {}, function(data){
-					if (data.message) {
-						alert(data.message);
-					} else {
-						calculateSummary(account, -absoluteAmount);
-						reloadList();
-					}
-								
-				}, "json");	
-			}
-		}
-
-		function toggleSummary(btn){
-			var closedText = "Open Summary";
-			var openText = "Close Summary";
-
-			var btn = $(btn);
-			var summary = $(".summary");
-
-			if (btn.html() === closedText){
-				btn.html(openText);
-				summary.removeClass("hidden");
-			} else {
-				btn.html(closedText);
-				summary.addClass("hidden");
-			}
-		}
 	</script>
+
+	<script type="text/javascript" src="static/js/main.js"></script>
 {% endblock %}
 {% block content %}
 	<button onclick="toggleSummary(this)">Open Summary</button>
@@ -239,7 +98,7 @@
 				<select id="categoryinput" name="category">
 					<option id="emptyselect" value="" disabled selected></option>
 					{% for category in categories %}
-					<option value="{{category['id']}}" data-flowtype="{{category['flow']}}" {{"disabled" if category['flow'] > 0 else ""}} >[{{category['group']}}] {{category['name']}}</option>
+					<option id="category{{category['id']}}" value="{{category['id']}}" data-flowtype="{{category['flow']}}" {{"disabled" if category['flow'] > 0 else ""}} >[{{category['group']}}] {{category['name']}}</option>
 					{% endfor %}
 				</select>
 			</td>
