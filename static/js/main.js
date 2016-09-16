@@ -51,7 +51,7 @@ function resetForm(){
 
 	var categoryinput = $("#categoryinput");
 	categoryinput.val("");
-	categoryinput.trigger("chosen:updated");
+	changeFlowChoice();
 }
 
 function reloadList(data){

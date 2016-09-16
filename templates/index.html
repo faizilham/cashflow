@@ -3,13 +3,13 @@
 {% block heads %}
 	<link rel="stylesheet" href="static/css/jquery-ui.min.css" type="text/css" />
 	<link rel="stylesheet" href="static/css/bootstrap.min.css" type="text/css" />
-	<link rel="stylesheet" href="static/css/chosen.min.css" type="text/css" />
+	<link rel="stylesheet" href="static/css/bootstrap-select.min.css" type="text/css" />
 	<link rel="stylesheet" href="static/css/style.css" type="text/css" />
 
 	<script type="text/javascript" src="static/js/jquery.min.js"></script>
 	<script type="text/javascript" src="static/js/jquery-ui.min.js"></script>
-	<script type="text/javascript" src="static/js/chosen.jquery.min.js"></script>
 	<script type="text/javascript" src="static/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="static/js/bootstrap-select.min.js"></script>
 
 {% endblock %}
 
@@ -19,22 +19,26 @@
 		$("#dateinput").datepicker({"dateFormat": "yy-mm-dd"}).datepicker("setDate", new Date());
 
 		// init combo-boxes 
-		$("#accountinput").chosen({"disable_search": true});
-		$("#flowinput").chosen({"disable_search": true}).change(function () {
-			var enabledType = $(this).val();
+		function changeFlowChoice() {
+			var enabledType = $("#flowinput").val();
 			var disabledType = -enabledType;
 
 			var categoryinput = $("#categoryinput");
 
-			categoryinput.find("[data-flowtype='" + enabledType + "']").prop("disabled", false);
-			categoryinput.find("[data-flowtype='" + disabledType + "']").prop("disabled", true);
+
+			categoryinput.find("[data-flowtype='" + enabledType + "']").prop("disabled", false)
+						 .show();
+
+			categoryinput.find("[data-flowtype='" + disabledType + "']").prop("disabled", true)
+						 .hide();
 
 			categoryinput.val("");
-			categoryinput.trigger("chosen:updated");
+			categoryinput.selectpicker('refresh');
+		}
 
-		});
+		$("#flowinput").on("changed.bs.select", changeFlowChoice);
 
-		$("#categoryinput").chosen({"display_disabled_options": false});
+		changeFlowChoice();
 
 		var accounts = {}
 
@@ -71,23 +75,23 @@
 		
 			<td> <input id="dateinput" name="date" autocomplete="off"/> </td>
 			<td>
-				<select id="accountinput" name="account">
+				<select id="accountinput" name="account" class="selectpicker">
 					{% for account in accounts %}
 					<option value="{{account['name']}}">{{account['name']}}</option>
 					{% endfor %}
 				</select>
 			</td>
 			<td>
-				<select id="flowinput" name="flow">
+				<select id="flowinput" name="flow" class="selectpicker">
 					<option value="1">Credit</option>
 					<option value="-1" selected>Debit</option>
 				</select>
 			</td>
 			<td>
-				<select id="categoryinput" name="category">
-					<option id="emptyselect" value="" disabled selected></option>
+				<select id="categoryinput" class="selectpicker" data-live-search="true" data-size="10" name="category">
+					<option id="emptyselect" value="" data-hidden="true" disabled selected></option>
 					{% for category in categories %}
-					<option id="category{{category['id']}}" value="{{category['id']}}" data-flowtype="{{category['flow']}}" {{"disabled" if category['flow'] > 0 else ""}} >[{{category['group']}}] {{category['name']}}</option>
+					<option id="category{{category['id']}}" value="{{category['id']}}" data-flowtype="{{category['flow']}}" data-tokens="{{category['name']}} {{category['group']}}" {{"disabled" if category['flow'] > 0 else ""}} >[{{category['group']}}] {{category['name']}}</option>
 					{% endfor %}
 				</select>
 			</td>
