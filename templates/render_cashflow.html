@@ -18,7 +18,8 @@
 	<td class="col4">{{ item["details"] }}</td>
 	<td class="actiontd">
 		<!-- <a href="#" onclick='editEntry({{item["id"]}})'>Edit</a> -->
-		<a href="#" onclick='deleteEntry({{item["id"]}}, "{{item["account"]}}", {{item["amount"] * item["flow"]}})'>X</a>
+		<a href="#" class="rowaction"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span></a>
+		<a href="#" class="rowaction" onclick='deleteEntry({{item["id"]}}, "{{item["account"]}}", {{item["amount"] * item["flow"]}})'><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>
 	</td>
 </tr>
 {% endfor %}

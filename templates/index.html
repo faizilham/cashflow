@@ -58,6 +58,11 @@
 		<button class="btn btn-info" data-toggle="modal" data-target="#summary-modal">Summary</button>
 	</div>
 	<hr/>
+	Action 
+	<select id="actionselect" class="selectpicker form-control" data-width='auto'>
+		<option value="add" data-icon="glyphicon-plus" selected>Insert</option>
+		<option value="transfer" data-icon="glyphicon-transfer">Transfer</option>
+	</select>
 	<table class="cashflow">
 		<tr class="theader">
 			<td class="col1">Date</td>
@@ -69,35 +74,44 @@
 			<td></td>
 		</tr>
 
+		<tr id="trtransfer" class="hidden">
+			<td class="col1"><input class="form-control"/></td>
+			<td colspan="2"><input class="form-control"/></td>
+			<td class="col2"><input class="form-control"/></td>
+			<td class="col3"><input class="form-control"/></td>
+			<td class="col4"><input class="form-control"/></td>
+			<td></td>
+		</tr>
+
 		<tr id="trform">
 		<fieldset id="entryForm">
 		<form onsubmit="return submitForm()">
 		
-			<td> <input id="dateinput" name="date" autocomplete="off"/> </td>
+			<td> <input class="form-control" id="dateinput" name="date" autocomplete="off"/> </td>
 			<td>
-				<select id="accountinput" name="account" class="selectpicker">
+				<select id="accountinput" name="account" class="selectpicker form-control">
 					{% for account in accounts %}
 					<option value="{{account['name']}}">{{account['name']}}</option>
 					{% endfor %}
 				</select>
 			</td>
 			<td>
-				<select id="flowinput" name="flow" class="selectpicker">
+				<select id="flowinput" name="flow" class="selectpicker form-control">
 					<option value="1">Credit</option>
 					<option value="-1" selected>Debit</option>
 				</select>
 			</td>
 			<td>
-				<select id="categoryinput" class="selectpicker" data-live-search="true" data-size="10" name="category">
+				<select id="categoryinput" class="selectpicker form-control" data-live-search="true" data-size="10" name="category">
 					<option id="emptyselect" value="" data-hidden="true" disabled selected></option>
 					{% for category in categories %}
 					<option id="category{{category['id']}}" value="{{category['id']}}" data-flowtype="{{category['flow']}}" data-tokens="{{category['name']}} {{category['group']}}" {{"disabled" if category['flow'] > 0 else ""}} >[{{category['group']}}] {{category['name']}}</option>
 					{% endfor %}
 				</select>
 			</td>
-			<td> <input id="amountinput" name="amount" autocomplete="off"/> </td>
-			<td> <input id="detailsinput" name="details" /> </td>
-			<td class="actiontd"> <button type="submit" id="addbutton">+</button> </td>
+			<td> <input class="form-control" id="amountinput" name="amount" autocomplete="off"/> </td>
+			<td> <input class="form-control" id="detailsinput" name="details" /> </td>
+			<td class="actiontd"> <button class="btn btn-default" type="submit" id="addbutton"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button> </td>
 		</form>
 		</fieldset>
 		</tr>

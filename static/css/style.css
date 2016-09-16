@@ -2,10 +2,6 @@ body{
 	font-family: sans-serif;
 }
 
-.cashflow .selectpicker{
-	width: 100%;
-}
-
 .cashflow input{
 	width: 100%;
 }
@@ -79,4 +75,14 @@ body {
 
 .col4{
 	width: 250px;
+}
+
+a.rowaction, a.rowaction:active, a.rowaction:focus{
+	outline: none;
+	color: #0099dd;
+}
+
+a.rowaction:hover{
+	outline: none;	
+	color: #0077bb;
 }
