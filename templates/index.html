@@ -21,16 +21,17 @@
 
 
 			$("#flowinput").on("changed.bs.select", changeFlowChoice);
+			$("#chart-picker").on("changed.bs.select", changeChartType);
 			$(".numinput").keypress(validateNumberTextbox);
 
 			changeFlowChoice();
 			scrollCashflow($('.entry').last());
 
-			$('#stat-navbutton').on('shown.bs.tab', function (e) {
-				
+			$('[data-toggle=tab]').on('shown.bs.tab', function (e) {
+				console.log(e.target.href);
 			});
 
-			buildTimelineChart();
+			redrawChart();
 		});
 	</script>
 {% endblock %}
@@ -194,18 +195,18 @@
 			<div class="statistic-tab-container">
 				<select id="chart-picker" class="selectpicker form-control" data-width="auto">
 					<option value="timeline">Timeline</option>
-					<option value="weekly">Time Distribution</option>
+					<option value="timedist">Time Distribution</option>
 					<option value="category">Category Distribution</option>
 				</select>
 
-				<select id="timeline-picker" class="selectpicker form-control" data-width="auto">
+				<select id="timeline-picker" class="selectpicker form-control hidden" data-width="auto">
 					<option value="daily">Daily</option>
 					<option value="weekly">Weekly</option>
 					<option value="monthly">Monthly</option>
 					<option value="yearly">Yearly</option>
 				</select>
-				<div class="canvas-wrapper">
-					<canvas id="stat" ></canvas>
+				<div id="canvas-wrapper">
+					<canvas id="stat"></canvas>
 				</div>
 			<div>
 		</div>

@@ -253,8 +253,28 @@ var statChartOptions = {
 	}
 };
 
-function redrawChart(){
+var CHARTTYPE = {
+	"timeline": "timeline",
+	"timedist": "timedist",
+	"category": "category"
+};
 
+var currentChartType = CHARTTYPE.timeline;
+
+function redrawChart(){
+	$("#stat").remove();
+	$("#canvas-wrapper").html('<canvas id="stat"></canvas>');
+
+	switch(currentChartType){
+		case CHARTTYPE.timeline: buildTimelineChart(); break;
+		case CHARTTYPE.timedist: break;
+		case CHARTTYPE.category: buildCategoryChart(); break;
+	}
+}
+
+function changeChartType () {
+	currentChartType = $(this).val();
+	redrawChart();
 }
 
 function buildTimelineChart(){
@@ -263,7 +283,7 @@ function buildTimelineChart(){
 	var lastDate = entries[0].entry_date;
 	var n = 0;
 
-	for (i in entries){
+	for (var i in entries){
 		var entry = entries[i];
 
 		if ((entry.flow === -1) && (entry.category_id !== 20000)) {
@@ -292,5 +312,72 @@ function buildTimelineChart(){
 			]
 		},
 		"options": statChartOptions				
+	});
+}
+
+function getRandomColor() {
+    var letters = '0123456789ABCDEF'.split('');
+    var color = '#';
+    for (var i = 0; i < 6; i++ ) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+}
+
+function buildCategoryChart(){
+	var ct_aggregate = {};
+	var sum = 0;
+	for (var i in entries){
+		var entry = entries[i];
+		
+		if ((entry.flow === -1) && (entry.category_id !== 20000)) {
+			var c_id =  entry.category_id;
+			if (ct_aggregate[c_id]){
+				ct_aggregate[c_id] += entry.amount;
+			} else {
+				ct_aggregate[c_id] = entry.amount;
+			}
+
+			sum += entry.amount;
+		}
+	}
+
+	var labels = [];
+	var data = [];
+	var color = [];
+
+	for (var c_id in ct_aggregate){
+		labels.push(categories[c_id].name);
+		data.push(ct_aggregate[c_id]);
+		color.push(getRandomColor())
+	}
+
+	new Chart($("#stat"), {
+		"type":"doughnut",
+		"data": {
+			"labels": labels,
+			"datasets":[
+				{
+					"label": "expense",
+					"data": data,
+					"backgroundColor": color,
+					"sum": sum
+				}
+			]
+		},
+		"options": {
+			"tooltips": {
+				"callbacks": {
+					"label": function(tooltipItems, data) { 
+						var dataset = data.datasets[tooltipItems.datasetIndex];
+						var amount = dataset.data[tooltipItems.index];
+						var percentage = Math.round(10000 * amount / dataset.sum) / 100;
+						var label = data.labels[tooltipItems.index];
+
+						return label + ": " + formatMoney(amount) + " (" + percentage +"%)";
+					}
+				}
+			}
+		}
 	});
 }
