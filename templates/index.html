@@ -12,9 +12,10 @@
 	<script type="text/javascript" src="static/js/bootstrap.min.js"></script>
 	<script type="text/javascript" src="static/js/bootstrap-select.min.js"></script>
 	<script type="text/javascript" src="static/js/bootstrap-datetimepicker.min.js"></script>
+	<script type="text/javascript" src="static/js/main.js"></script>
 
 	<script type="text/javascript">
-		var accounts = {}
+		var accounts = {};
 
 		{% for account in accounts %}
 		accounts["{{ account['name'] }}"] = {
@@ -22,14 +23,25 @@
 			"current": {{ account["current"] }}
 		};
 		{% endfor %}
+
+		var categories = {};
+
+		{% for _id, category in categoryDict.items() %}
+		categories[{{ _id }}] = {
+			"id": {{_id}},
+			"name": '{{ category["name"] }}',
+			"group": '{{ category["group"] }}',
+			"group_id": {{ category["group_id"] }},
+			"flow": {{ category["flow"] }}
+		};
+		{% endfor %}
 	</script>
 {% endblock %}
 
 {% block footscript %}
-	<script type="text/javascript" src="static/js/main.js"></script>
 	<script type="text/javascript">
 
-		$(".datepick").datetimepicker({
+		$(".datepick").keypress(validateDateTextbox).datetimepicker({
 			"viewMode": "days",
 			'format': 'YYYY-MM-DD',
 			"defaultDate": new Date()
@@ -44,132 +56,171 @@
 	</script>
 {% endblock %}
 {% block content %}
-	<h3 class="center">Cashflow</h3>
-	<table class="entrytable">
-		<thead>
-			<tr class="theader">
-				<th class="col1">Date</th>
-				<th class="col1">Account</th>
-				<th class="col1">Type</th>
-				<th class="col2">Category</th>
-				<th class="col3">Amount</th>
-				<th class="col4">Details</th>
-				<th class="col5"></th>
-			</tr>
-		</thead>
+	<nav class="navbar navbar-default">
+		<div class="container-fluid">
+			<div class="navbar-header">
+				<a class="navbar-brand" href="#">Cashflow</a>
+			</div>
+			<ul class="nav navbar-nav">
+				<li class="active"><a data-toggle="tab" href="#home">Home</a></li>
+				<li><a data-toggle="tab" href="#summary">Summary</a></li>
+			</ul>
+		</div>
+	</nav>
+	
 
-		<tbody class="cashflow">
-			{% include "render_cashflow.html" %}
-			<tr id="tranchor" class="hidden"></tr>
-		</tbody>
-	</table>
+	<!-- <select id="timeline" class="selectpicker form-control" data-width="auto">
+		<option value="thismonth">This Month</option>
+		<option value="thisweek">This Week</option>
+		<option value="lastmonth">Last Month</option>
+		<option value="lastweek">Last Week</option>
+		<option value="last30">Last 30 Days</option>
+		<option value="last7">Last 7 Days</option>
+		<option value="other">Other Month</option>
+	</select> -->
 
-	<table class="actionbar">
+	<div class="tab-content">
+		<div id="home" class="tab-pane active">
+			<table class="entrytable">
+				<thead>
+					<tr class="theader">
+						<th class="col1">Date</th>
+						<th class="col1">Account</th>
+						<th class="col1">Type</th>
+						<th class="col2">Category</th>
+						<th class="col3">Amount</th>
+						<th class="col4">Details</th>
+						<th class="col5"></th>
+					</tr>
+				</thead>
 
-		<tr id="trchoose">
-			<td>
-				 <div class="dropdown">
-					<button id="actionchoose" class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown"><span class="caret"></span></button>
-					<ul class="dropdown-menu dropdown-menu-right">
-						<li><a href="#" onclick="chooseAction('insert')"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Insert</a></li>
-						<li><a href="#" onclick="chooseAction('transfer')"><span class="glyphicon glyphicon-transfer" aria-hidden="true"></span> Transfer</a></li>
-					</ul>
-				</div>
-			</td>
-		</tr>
+				<tbody class="cashflow cashflow-scroll">
+					{% include "render_cashflow.html" %}
+					<tr id="tranchor" class="hidden"></tr>
+				</tbody>
+			</table>
 
-		<tr id="trinsert" class="traction">
-		<fieldset id="entryForm">
-		<form onsubmit="return submitInsert()">
-			<td class="tdaction col1">
-				<div class='input-group date'>
-					<input class="form-control datepick" id="dateinput" name="date" autocomplete="off"/>
-					<span class="input-group-addon">
-						<span class="glyphicon glyphicon-calendar"></span>
-					</span>
-				</div>
-				
-			</td>
-			<td class="col1">
-				<select id="accountinput" name="account" class="selectpicker form-control">
+			<table class="actionbar">
+
+				<tr id="trchoose">
+					<td>
+						 <div class="dropdown">
+							<button id="actionchoose" class="btn btn-default dropdown-toggle floatbutton" type="button" data-toggle="dropdown"><span class="caret"></span></button>
+							<ul class="dropdown-menu dropdown-menu-right">
+								<li><a href="#" onclick="chooseAction('insert')"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Insert</a></li>
+								<li><a href="#" onclick="chooseAction('transfer')"><span class="glyphicon glyphicon-transfer" aria-hidden="true"></span> Transfer</a></li>
+							</ul>
+
+							<button class="btn btn-default floatbutton hidden" type="button">&times;</button>
+						</div>
+					</td>
+				</tr>
+
+				<tr id="trinsert" class="traction">
+				<fieldset id="entryForm">
+				<form onsubmit="return submitInsert()">
+					<td class="tdaction col1">
+						<div class='date'>
+							<input class="form-control datepick" id="dateinput" name="date" autocomplete="off"/>
+						</div>				
+					</td>
+					<td class="col1">
+						<select id="accountinput" name="account" class="selectpicker form-control">
+							{% for account in accounts %}
+							<option value="{{account['name']}}">{{account['name']}}</option>
+							{% endfor %}
+						</select>
+					</td>
+					<td class="col1">
+						<select id="flowinput" name="flow" class="selectpicker form-control">
+							<option value="1">Credit</option>
+							<option value="-1" selected>Debit</option>
+						</select>
+					</td>
+					<td class="col2">
+						<select id="categoryinput" class="selectpicker dropup form-control" data-dropup-auto="false" data-live-search="true" title="Select category" data-size="10" name="category">
+							<option id="emptyselect" value="" data-hidden="true" disabled selected></option>
+							{% for category in categories %}
+							<option id="category{{category['id']}}" value="{{category['id']}}" data-flowtype="{{category['flow']}}" data-tokens="{{category['name']}} {{category['group']}}" {{"disabled" if category['flow'] > 0 else ""}} >[{{category['group']}}] {{category['name']}}</option>
+							{% endfor %}
+						</select>
+					</td>
+					<td class="col3">
+						<input class="form-control numinput" id="amountinput" name="amount" autocomplete="off" placeholder="Amount"/>
+					</td>
+					<td class="col4">
+						<input class="form-control detinput" id="detailsinput" name="details" placeholder="Details"/>
+					</td>
+					<td class="actiontd col5">
+						<button class="btn btn-default" type="submit" title="Insert New Transaction"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
+					</td>
+				</form>
+				</fieldset>
+				</tr>
+
+				<tr id="trtransfer" class="traction hidden">
+				<fieldset id="transferForm">
+				<form onsubmit="return submitTransfer()">
+					<td class="col1">
+						<div class='date'>
+							<input class="form-control datepick" id="date-transfer" name="date-transfer" autocomplete="off"/>
+						</div>
+					</td>
+
+					<td colspan="2" class="col1a">
+						<select id="account-from-transfer" name="account-from" class="selectpicker form-control">
+							{% for account in accounts %}
+							<option value="{{account['name']}}">From: {{account['name']}}</option>
+							{% endfor %}
+						</select>				
+					</td>
+					
+					<td class="col2">
+						<select id="account-to-transfer" name="account-to" class="selectpicker form-control">
+							{% for account in accounts %}
+							<option value="{{account['name']}}">To: {{account['name']}}</option>
+							{% endfor %}
+						</select>
+					</td>
+					<td class="col3">
+						<input class="form-control numinput" id="amount-transfer" name="amount-transfer" autocomplete="off" placeholder="Amount"/>
+					</td>
+					<td class="col4">
+						<input class="form-control detinput" id="details-transfer" name="details-transfer" placeholder="Details"/>
+					</td>
+					<td class="actiontd col5">
+						<button class="btn btn-default" type="submit" title="Transfer"><span class="glyphicon glyphicon-transfer" aria-hidden="true"></span></button>
+					</td>
+				</form>
+				</fieldset>
+				</tr>		
+			</table>
+		</div>
+		<div id="summary" class="tab-pane">
+			<table class="summary">
+					<tr>
+						<th></th>
+						<th>Total</th>
+						<th>This Month</th>
+					</tr>
 					{% for account in accounts %}
-					<option value="{{account['name']}}">{{account['name']}}</option>
+					<tr class="accountinfo">
+						<th>{{ account["name"]}}</th>
+						<td id="{{ account['name']}}-total">{{ format_money(account["fund"]) }}</td>
+						<td id="{{ account['name']}}-monthly" {% if account["current"] < 0 %} class="debit" {% endif %}>{{ format_money(account["current"]) }}</td>
+						
+					</tr>
 					{% endfor %}
-				</select>
-			</td>
-			<td class="col1">
-				<select id="flowinput" name="flow" class="selectpicker form-control">
-					<option value="1">Credit</option>
-					<option value="-1" selected>Debit</option>
-				</select>
-			</td>
-			<td class="col2">
-				<select id="categoryinput" class="selectpicker dropup form-control" data-dropup-auto="false" data-live-search="true" title="Select category" data-size="10" name="category">
-					<option id="emptyselect" value="" data-hidden="true" disabled selected></option>
-					{% for category in categories %}
-					<option id="category{{category['id']}}" value="{{category['id']}}" data-flowtype="{{category['flow']}}" data-tokens="{{category['name']}} {{category['group']}}" {{"disabled" if category['flow'] > 0 else ""}} >[{{category['group']}}] {{category['name']}}</option>
-					{% endfor %}
-				</select>
-			</td>
-			<td class="col3">
-				<input class="form-control numinput" id="amountinput" name="amount" autocomplete="off" placeholder="Amount"/>
-			</td>
-			<td class="col4">
-				<input class="form-control detinput" id="detailsinput" name="details" placeholder="Details"/>
-			</td>
-			<td class="actiontd col5">
-				<button class="btn btn-default" type="submit" title="Insert New Transaction"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
-			</td>
-		</form>
-		</fieldset>
-		</tr>
 
-		<tr id="trtransfer" class="traction hidden">
-		<fieldset id="transferForm">
-		<form onsubmit="return submitTransfer()">
-			<td class="col1">
-				<div class='input-group date'>
-					<input class="form-control datepick" id="date-transfer" name="date-transfer" autocomplete="off"/>
-					<span class="input-group-addon">
-						<span class="glyphicon glyphicon-calendar"></span>
-					</span>
-				</div>
-			</td>
+				</table>
+		</div>
+	</div>
 
-			<td colspan="2" class="col1a">
-				<select id="account-from-transfer" name="account-from" class="selectpicker form-control">
-					{% for account in accounts %}
-					<option value="{{account['name']}}">From: {{account['name']}}</option>
-					{% endfor %}
-				</select>				
-			</td>
-			
-			<td class="col2">
-				<select id="account-to-transfer" name="account-to" class="selectpicker form-control">
-					{% for account in accounts %}
-					<option value="{{account['name']}}">To: {{account['name']}}</option>
-					{% endfor %}
-				</select>
-			</td>
-			<td class="col3">
-				<input class="form-control numinput" id="amount-transfer" name="amount-transfer" autocomplete="off" placeholder="Amount"/>
-			</td>
-			<td class="col4">
-				<input class="form-control detinput" id="details-transfer" name="details-transfer" placeholder="Details"/>
-			</td>
-			<td class="actiontd col5">
-				<button class="btn btn-default" type="submit" title="Transfer"><span class="glyphicon glyphicon-transfer" aria-hidden="true"></span></button>
-			</td>
-		</form>
-		</fieldset>
-		</tr>		
-	</table>
-
-	<hr/>
+	<!--<hr/>
 
 	<div>
 		<button class="btn btn-info" data-toggle="modal" data-target="#summary-modal">Summary</button>
-	</div>
+	</div>-->
 	
 	<div class="modal" id="summary-modal" role="dialog">
 		<div class="modal-dialog">
@@ -179,22 +230,6 @@
 				<h4 class="modal-title">Summary</h4>
 			</div>
 			<div class="modal-body">
-				<table class="summary">
-					<tr>
-						<td></td>
-						<td>Total</td>
-						<td>This Month</td>
-					</tr>
-					{% for account in accounts %}
-					<tr>
-						<td>{{ account["name"]}}</td>
-						<td id="{{ account['name']}}-total">{{ format_money(account["fund"]) }}</td>
-						<td id="{{ account['name']}}-monthly" {% if account["current"] < 0 %} class="debit" {% endif %}>{{ format_money(account["current"]) }}</td>
-						
-					</tr>
-					{% endfor %}
-
-				</table>
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>

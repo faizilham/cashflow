@@ -37,7 +37,9 @@ class Cache(object):
 		self.categoryDict = {}
 		for category in self.db.getCategories():
 			_id = category["id"]
+			g_id = int(_id / SUBCATEGORY_SIZE)
 
-			category["group"] = self.groups[int(_id / SUBCATEGORY_SIZE)]["name"]
+			category["group_id"] = g_id
+			category["group"] = self.groups[g_id]["name"]
 			self.categoryDict[_id] = category
 			self.categories.append(category)

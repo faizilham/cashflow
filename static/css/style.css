@@ -1,7 +1,15 @@
-/*** MODALS ****/
+/*** SUMMARY ****/
 
 .summary{
 	width: 100%;
+}
+
+.summary td, .summary td{
+	padding: 0.25em 0.25em;
+}
+
+.summary .accountinfo:nth-child(odd){
+	background: #eee;
 }
 
 /**** ACTION BAR ****/
@@ -49,7 +57,7 @@
 	padding-right:0;
 }
 
-#actionchoose{
+.floatbutton{
 	-webkit-border-top-left-radius: 0;
 	-moz-border-top-left-radius: 0;
 	border-top-left-radius: 0;
@@ -65,13 +73,16 @@
 /**** INSERT ACTION BAR ****/
 
 .datepick {
-	/*text-align: center;*/
+	text-align: center;
+}
+
+.date {
+	position: relative;
 }
 
 .numinput{
 	text-align: right;
 }
-
 
 .entry-date{
 	text-align: center;
@@ -93,7 +104,7 @@
 	border: 1px solid #eee;
 }
 
-.cashflow{
+.cashflow-scroll{
 	overflow: auto;
 	height: 405px;
 }
@@ -160,11 +171,11 @@ body{
 /**** TABLE STRUCTURE ****/
 
 .col1{
-	width: 150px;
+	width: 120px;
 }
 
 .col1a {
-	width: 300px;
+	width: 240px;
 }
 
 .col2{
