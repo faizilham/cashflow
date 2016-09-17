@@ -10,7 +10,7 @@ with open("config.yml", 'r') as f:
 	config = yaml.load(f)
 
 app = Flask(__name__)
-app.config['DEBUG'] = True
+app.config['DEBUG'] = config.get("debug")
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 
 db = Database(config["dbpath"])
@@ -41,11 +41,11 @@ def index_page():
 
 	return render_template("index.html", format_money=format_money, cashflow=cashflow, categories=cache.categories, categoryDict=cache.categoryDict, accounts=accounts)
 
-@app.route("/entrylist")
+@app.route("/components/cashflow")
 def entrylist_page():
 	cashflow = get_entries(request.args)
 
-	return render_template("render_cashflow.html", format_money=format_money, cashflow=cashflow, categoryDict=cache.categoryDict)
+	return render_template("components/cashflow.html", format_money=format_money, cashflow=cashflow, categoryDict=cache.categoryDict)
 	
 if __name__ == "__main__":
 	app.run(port=config["port"])

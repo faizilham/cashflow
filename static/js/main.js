@@ -44,7 +44,6 @@ function validateNumberTextbox(e){
 	}
 }
 
-
 /**** VIEW CHANGER ****/
 function calculateSummary(account, absoluteAmount){
 	var monthly = $("#" + account + "-monthly");
@@ -61,6 +60,8 @@ function calculateSummary(account, absoluteAmount){
 	} else {
 		monthly.removeClass("debit");
 	}
+
+	statistics_data_changed = true;
 }
 
 function changeFlowChoice() {
@@ -91,7 +92,7 @@ function reloadList(last_id, last_date, new_date){
 		data = {"minid": last_id, "datefirst": last_date}
 	}
 
-	$.get("/entrylist", data || {}, function(result){
+	$.get("/components/cashflow", data || {}, function(result){
 		if (!data) $(".entry").remove();
 
 		var newEntry = $(result);

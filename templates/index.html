@@ -35,6 +35,8 @@
 			"flow": {{ category["flow"] }}
 		};
 		{% endfor %}
+
+		var statistics_data_changed = false;
 	</script>
 {% endblock %}
 
@@ -53,6 +55,10 @@
 
 		changeFlowChoice();
 		scrollCashflow($('.entry').last());
+
+		$('#stat-navbutton').on('shown.bs.tab', function (e) {
+			
+		});
 	</script>
 {% endblock %}
 {% block content %}
@@ -64,6 +70,7 @@
 			<ul class="nav navbar-nav">
 				<li class="active"><a data-toggle="tab" href="#home">Home</a></li>
 				<li><a data-toggle="tab" href="#summary">Summary</a></li>
+				<li><a id="stat-navbutton" data-toggle="tab" href="#statistics">Statistics</a></li>
 			</ul>
 		</div>
 	</nav>
@@ -80,6 +87,7 @@
 	</select> -->
 
 	<div class="tab-content">
+
 		<div id="home" class="tab-pane active">
 			<table class="entrytable">
 				<thead>
@@ -95,13 +103,12 @@
 				</thead>
 
 				<tbody class="cashflow cashflow-scroll">
-					{% include "render_cashflow.html" %}
+					{% include "components/cashflow.html" %}
 					<tr id="tranchor" class="hidden"></tr>
 				</tbody>
 			</table>
 
 			<table class="actionbar">
-
 				<tr id="trchoose">
 					<td>
 						 <div class="dropdown">
@@ -110,7 +117,6 @@
 								<li><a href="#" onclick="chooseAction('insert')"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Insert</a></li>
 								<li><a href="#" onclick="chooseAction('transfer')"><span class="glyphicon glyphicon-transfer" aria-hidden="true"></span> Transfer</a></li>
 							</ul>
-
 							<button class="btn btn-default floatbutton hidden" type="button">&times;</button>
 						</div>
 					</td>
@@ -166,7 +172,6 @@
 							<input class="form-control datepick" id="date-transfer" name="date-transfer" autocomplete="off"/>
 						</div>
 					</td>
-
 					<td colspan="2" class="col1a">
 						<select id="account-from-transfer" name="account-from" class="selectpicker form-control">
 							{% for account in accounts %}
@@ -174,7 +179,6 @@
 							{% endfor %}
 						</select>				
 					</td>
-					
 					<td class="col2">
 						<select id="account-to-transfer" name="account-to" class="selectpicker form-control">
 							{% for account in accounts %}
@@ -196,23 +200,25 @@
 				</tr>		
 			</table>
 		</div>
+
 		<div id="summary" class="tab-pane">
 			<table class="summary">
-					<tr>
-						<th></th>
-						<th>Total</th>
-						<th>This Month</th>
-					</tr>
-					{% for account in accounts %}
-					<tr class="accountinfo">
-						<th>{{ account["name"]}}</th>
-						<td id="{{ account['name']}}-total">{{ format_money(account["fund"]) }}</td>
-						<td id="{{ account['name']}}-monthly" {% if account["current"] < 0 %} class="debit" {% endif %}>{{ format_money(account["current"]) }}</td>
-						
-					</tr>
-					{% endfor %}
+				<tr>
+					<th></th>
+					<th>Total</th>
+					<th>This Month</th>
+				</tr>
+				{% for account in accounts %}
+				<tr class="accountinfo">
+					<th>{{ account["name"]}}</th>
+					<td id="{{ account['name']}}-total">{{ format_money(account["fund"]) }}</td>
+					<td id="{{ account['name']}}-monthly" {% if account["current"] < 0 %} class="debit" {% endif %}>{{ format_money(account["current"]) }}</td>
+				</tr>
+				{% endfor %}
+			</table>
+		</div>
 
-				</table>
+		<div id="statistics" class="tab-pane">
 		</div>
 	</div>
 
