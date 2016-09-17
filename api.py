@@ -15,9 +15,24 @@ def reply(data, message=None, status=200):
 
 	return response
 
+def get_entries(db, form={}):
+	query = {
+		"orderby": [("entry_date", True), ("id", True)]
+	}
+
+	if form.get("minid"): query["minid"] = form.get("minid")
+	if form.get("datefirst"): query["date_first"] = form.get("datefirst")
+	if form.get("datelast"): query["date_last"] = form.get("datelast")
+
+	return db.getEntries(**query)
+
 def construct_blueprint(db, cache):
 
 	api = Blueprint('api', __name__)
+
+	@api.route("/entries", methods=['GET'])
+	def getEntries():
+		return reply(get_entries(db, request.args))
 
 	@api.route("/entries", methods=['POST'])
 	def addEntry():

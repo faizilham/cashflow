@@ -1,0 +1,27 @@
+<link rel="stylesheet" href="static/css/bootstrap.min.css" type="text/css" />
+<link rel="stylesheet" href="static/css/bootstrap-select.min.css" type="text/css" />
+<link rel="stylesheet" href="static/css/bootstrap-datetimepicker.min.css" type="text/css" />
+<link rel="stylesheet" href="static/css/style.css" type="text/css" />
+
+<script type="text/javascript" src="static/js/jquery.min.js"></script>
+<script type="text/javascript" src="static/js/moment.min.js"></script>
+<script type="text/javascript" src="static/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="static/js/bootstrap-select.min.js"></script>
+<script type="text/javascript" src="static/js/bootstrap-datetimepicker.min.js"></script>
+<script type="text/javascript" src="static/js/handlebars.runtime.js"></script>
+<script type="text/javascript" src="static/js/Chart.min.js"></script>
+<script type="text/javascript" src="static/js/helpers.js"></script>
+<script type="text/javascript" src="static/js/main.js"></script>
+<script type="text/javascript" src="static/js/component/cashflow.js"></script>
+
+
+<script type="text/javascript">
+	var accounts = {
+	{% for account in accounts %}
+		"{{ account['name'] }}": {"fund": {{ account["fund"] }}, "current": {{ account["current"] }}},
+	{% endfor %}
+	};
+
+	var categories = {{ stringify(categoryDict) | safe }};
+	var entries = {{ stringify(cashflow) | safe }}
+</script>

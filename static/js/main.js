@@ -1,33 +1,6 @@
 // functions
 
-/**** HELPERS ****/
-function formatMoney(amount){
-	var negative = false;
-	if (amount < 0){
-		negative = true;
-		amount = -amount;
-	}
-
-	stramount = "";
-	while (amount >= 1000) {
-		thousands = String(amount % 1000)
-
-		if (thousands.length == 2) thousands = "0" + thousands
-		else if (thousands.length == 1) thousands = "00" + thousands
-
-		stramount = "," + thousands + stramount
-		amount = Math.floor(amount / 1000)
-	}
-
-	stramount = "Rp. " + amount + stramount;
-
-	if (negative){
-		stramount = "(" + stramount + ")";
-	}
-
-	return stramount;
-}
-
+/**** TEXTBOX VALIDATE ****/
 function validateDateTextbox(e){
 	if (e.which != 8 && e.which != 0 && (e.which < 48 || e.which > 57) && e.which != 45) {
 		return false;
@@ -60,8 +33,6 @@ function calculateSummary(account, absoluteAmount){
 	} else {
 		monthly.removeClass("debit");
 	}
-
-	statistics_data_changed = true;
 }
 
 function changeFlowChoice() {
@@ -85,25 +56,42 @@ function scrollCashflow(last){
 	$(".cashflow").scrollTop(last.position().top);
 }
 
-function reloadList(last_id, last_date, new_date){
+function refreshEntries(last_id, last_date, new_date){
 	var data = null;
 
 	if (new_date && (new Date(last_date) <= new Date(new_date))){
 		data = {"minid": last_id, "datefirst": last_date}
 	}
 
-	$.get("/components/cashflow", data || {}, function(result){
-		if (!data) $(".entry").remove();
+	$.get("/api/entries", data || {}, function(result){
 
-		var newEntry = $(result);
+		if(!result.data) { return alert("Error: " + result.message);}
+
+		if (!data) {
+			$(".entry").remove();
+			entries = result.data;
+		} else {
+			Array.prototype.push.apply(entries, result.data);
+		}
+
+		var newEntry = $(Handlebars.templates.cashflow({
+			"categories": categories, "entries": result.data
+		}));
 
 		newEntry.insertBefore($("#tranchor"));
 		scrollCashflow(newEntry);
+
+		redrawChart();
 	});
 }
 
 function deleteRow(_id){
 	$("#entry" + _id).remove();
+	var i = findWithAttr(entries, "id", _id);
+
+	if (i > -1) entries.splice(i, 1);
+
+	redrawChart();
 }
 
 function chooseAction(actiontype){
@@ -167,23 +155,21 @@ function submitInsert(){
 			var minid = firstEntry.data("id");
 			var datefirst = firstEntry.find(".entry-date").text();
 
-			reloadList(minid, datefirst, date);
+			refreshEntries(minid, datefirst, date);
 		}
 					
 	}, "json");
 
-
-
 	return false;
 }
 
-function deleteEntry(_id, account, absoluteAmount){
+function deleteEntry(_id, account, flow, amount){
 	if (confirm("Delete this entry?")){
 		$.post("/api/entries/" + _id + "/delete", {}, function(data){
 			if (data.message) {
 				alert(data.message);
 			} else {
-				calculateSummary(account, -absoluteAmount);
+				calculateSummary(account, -(flow * amount));
 				deleteRow(_id);
 			}
 						
@@ -241,12 +227,70 @@ function submitTransfer(){
 			var minid = firstEntry.data("id");
 			var datefirst = firstEntry.find(".entry-date").text();
 
-			reloadList(minid, datefirst, date);
+			refreshEntries(minid, datefirst, date);
 		}
 					
 	}, "json");
 
-
-
 	return false;
+}
+
+/**** CHART BUILDER ****/
+var statChartOptions = {
+	"scales": {
+		"yAxes": [{
+			"ticks": {
+				"beginAtZero":true,
+				"callback": formatMoney
+			}
+		}]
+	},
+
+	"tooltips": {
+		"callbacks": {
+			"label": function(tooltipItems, data) { return formatMoney(tooltipItems.yLabel);}
+		}
+	}
+};
+
+function redrawChart(){
+
+}
+
+function buildTimelineChart(){
+	var data_daily_debit = [0];
+	var data_labels = [entries[0].entry_date];
+	var lastDate = entries[0].entry_date;
+	var n = 0;
+
+	for (i in entries){
+		var entry = entries[i];
+
+		if ((entry.flow === -1) && (entry.category_id !== 20000)) {
+			if (entry.entry_date === lastDate){
+				data_daily_debit[n] += entry.amount;
+			} else {
+				data_daily_debit.push(entry.amount);
+				lastDate = entry.entry_date;
+				data_labels.push(lastDate);
+				n++;
+			}
+		}
+	}
+
+	new Chart($("#stat"), {
+		"type":"line",
+		"data": {
+			"labels": data_labels,
+			"datasets":[
+				{
+					"label": "expense",
+					"data": data_daily_debit,
+					"backgroundColor": "rgba(0,0,0,0)",
+					"borderColor": "rgba(255,0,0,0.5)"
+				}
+			]
+		},
+		"options": statChartOptions				
+	});
 }

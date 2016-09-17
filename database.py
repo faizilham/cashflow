@@ -22,6 +22,7 @@ def entryObject(row):
 		"entry_date": row[1], 
 		"account": row[2], 
 		"flow": row[3], 
+		"is_credit": (row[3] == 1), 
 		"category_id": row[4], 
 		"amount": row[5], 
 		"details": row[6], 

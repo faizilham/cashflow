@@ -12,6 +12,17 @@
 	background: #eee;
 }
 
+/**** STATISTIC CHART ****/
+
+.canvas-wrapper{
+	width:750px; height:500px
+}
+
+.statistic-tab-container{
+	display: inline-block;
+	text-align:right
+}
+
 /**** ACTION BAR ****/
 
 .actionbar{

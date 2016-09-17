@@ -1,108 +1,37 @@
 {% extends "base.html" %}
 {% block title %}Home{% endblock %}
 {% block heads %}
-	
-	<link rel="stylesheet" href="static/css/bootstrap.min.css" type="text/css" />
-	<link rel="stylesheet" href="static/css/bootstrap-select.min.css" type="text/css" />
-	<link rel="stylesheet" href="static/css/bootstrap-datetimepicker.min.css" type="text/css" />
-	<link rel="stylesheet" href="static/css/style.css" type="text/css" />
-
-	<script type="text/javascript" src="static/js/jquery.min.js"></script>
-	<script type="text/javascript" src="static/js/moment.min.js"></script>
-	<script type="text/javascript" src="static/js/bootstrap.min.js"></script>
-	<script type="text/javascript" src="static/js/bootstrap-select.min.js"></script>
-	<script type="text/javascript" src="static/js/bootstrap-datetimepicker.min.js"></script>
-	<script type="text/javascript" src="static/js/Chart.min.js"></script>
-	<script type="text/javascript" src="static/js/main.js"></script>
-
-	<script type="text/javascript">
-		var accounts = {
-		{% for account in accounts %}
-			"{{ account['name'] }}": {"fund": {{ account["fund"] }}, "current": {{ account["current"] }}},
-		{% endfor %}
-		};
-
-		var categories = {{ stringify(categoryDict) | safe }};
-		var entries = {{ stringify(cashflow) | safe }}
-
-		var statistics_data_changed = false;
-	</script>
+	{% include "head.html" %}
 {% endblock %}
 
 {% block footscript %}
 	<script type="text/javascript">
-
-		$(".datepick").keypress(validateDateTextbox).datetimepicker({
-			"viewMode": "days",
-			'format': 'YYYY-MM-DD',
-			"defaultDate": new Date()
-		});
-
-
-		$("#flowinput").on("changed.bs.select", changeFlowChoice);
-		$(".numinput").keypress(validateNumberTextbox);
-
-		changeFlowChoice();
-		scrollCashflow($('.entry').last());
-
-		$('#stat-navbutton').on('shown.bs.tab', function (e) {
-			if (statistics_data_changed){
-				statistics_data_changed = false;
-			}
-		});
-
-		if (entries.length){
-			var data_daily_debit = [0];
-			var data_labels = [entries[0].entry_date];
-			var lastDate = entries[0].entry_date;
-			var i = 0;
-
-			for (x in entries){
-				var entry = entries[x];
-
-				if ((entry.flow === -1) && (entry.category_id !== 20000)) {
-					if (entry.entry_date === lastDate){
-						data_daily_debit[i] += entry.amount;
-					} else {
-						data_daily_debit.push(entry.amount);
-						lastDate = entry.entry_date;
-						data_labels.push(lastDate);
-						i++;
-					}
-				}
-			}
-
-			new Chart($("#stat"), {
-				"type":"line",
-				"data": {
-					"labels": data_labels,
-					"datasets":[
-						{
-							"label": "expense",
-							"data": data_daily_debit,
-							"backgroundColor": "rgba(0,0,0,0)",
-							"borderColor": "rgba(255,0,0,0.5)"
-						}
-					]
-				},
-				"options": {
-					"scales": {
-						"yAxes": [{
-							"ticks": {
-								"beginAtZero":true,
-								"callback": formatMoney
-							}
-						}]
-					},
-
-					"tooltips": {
-						"callbacks": {
-							"label": function(tooltipItems, data) { return formatMoney(tooltipItems.yLabel);}
-						}
-					}
-				}				
+		$(document).ready(function(){
+			var cashflowentry = Handlebars.templates.cashflow({
+				"categories": categories, "entries": entries
 			});
-		}
+
+			$(cashflowentry).insertBefore($("#tranchor"));
+
+			$(".datepick").keypress(validateDateTextbox).datetimepicker({
+				"viewMode": "days",
+				'format': 'YYYY-MM-DD',
+				"defaultDate": new Date()
+			});
+
+
+			$("#flowinput").on("changed.bs.select", changeFlowChoice);
+			$(".numinput").keypress(validateNumberTextbox);
+
+			changeFlowChoice();
+			scrollCashflow($('.entry').last());
+
+			$('#stat-navbutton').on('shown.bs.tab', function (e) {
+				
+			});
+
+			buildTimelineChart();
+		});
 	</script>
 {% endblock %}
 {% block content %}
@@ -147,7 +76,6 @@
 				</thead>
 
 				<tbody class="cashflow cashflow-scroll">
-					{% include "components/cashflow.html" %}
 					<tr id="tranchor" class="hidden"></tr>
 				</tbody>
 			</table>
@@ -263,9 +191,23 @@
 		</div>
 
 		<div id="statistics" class="tab-pane center">
-			<div style="width:600px; height:400px; display: block;">
-				<canvas id="stat" ></canvas>
-			</div>
+			<div class="statistic-tab-container">
+				<select id="chart-picker" class="selectpicker form-control" data-width="auto">
+					<option value="timeline">Timeline</option>
+					<option value="weekly">Time Distribution</option>
+					<option value="category">Category Distribution</option>
+				</select>
+
+				<select id="timeline-picker" class="selectpicker form-control" data-width="auto">
+					<option value="daily">Daily</option>
+					<option value="weekly">Weekly</option>
+					<option value="monthly">Monthly</option>
+					<option value="yearly">Yearly</option>
+				</select>
+				<div class="canvas-wrapper">
+					<canvas id="stat" ></canvas>
+				</div>
+			<div>
 		</div>
 	</div>
 
