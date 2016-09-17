@@ -26,7 +26,7 @@
 {% block footscript %}
 	<script type="text/javascript" src="static/js/main.js"></script>
 	<script type="text/javascript">
-	
+
 		$(".datepick").datepicker({"dateFormat": "yy-mm-dd"}).datepicker("setDate", new Date());
 		$("#flowinput").on("changed.bs.select", changeFlowChoice);
 		$(".numinput").keypress(validateNumberTextbox);
@@ -36,9 +36,7 @@
 	</script>
 {% endblock %}
 {% block content %}
-	<div>
-		<button class="btn btn-info" data-toggle="modal" data-target="#summary-modal">Summary</button>
-	</div>
+	<h3 class="center">Cashflow</h3>
 	<table class="entrytable">
 		<thead>
 			<tr class="theader">
@@ -48,6 +46,7 @@
 				<th class="col2">Category</th>
 				<th class="col3">Amount</th>
 				<th class="col4">Details</th>
+				<th class="col5"></th>
 			</tr>
 		</thead>
 
@@ -104,8 +103,8 @@
 			<td class="col4">
 				<input class="form-control detinput" id="detailsinput" name="details" placeholder="Details"/>
 			</td>
-			<td class="actiontd">
-				<button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
+			<td class="actiontd col5">
+				<button class="btn btn-default" type="submit" title="Insert New Transaction"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
 			</td>
 		</form>
 		</fieldset>
@@ -138,24 +137,28 @@
 			<td class="col4">
 				<input class="form-control detinput" id="details-transfer" name="details-transfer" placeholder="Details"/>
 			</td>
-			<td class="actiontd">
-				<button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-transfer" aria-hidden="true"></span></button>
+			<td class="actiontd col5">
+				<button class="btn btn-default" type="submit" title="Transfer"><span class="glyphicon glyphicon-transfer" aria-hidden="true"></span></button>
 			</td>
 		</form>
 		</fieldset>
-		</tr>
-
-		
+		</tr>		
 	</table>
+
+	<hr/>
+
+	<div>
+		<button class="btn btn-info" data-toggle="modal" data-target="#summary-modal">Summary</button>
+	</div>
+	
 
 	
 	<div class="modal" id="summary-modal" role="dialog">
 		<div class="modal-dialog">
-			<!-- Modal content-->
 		<div class="modal-content">
 			<div class="modal-header">
 				<button type="button" class="close" data-dismiss="modal">&times;</button>
-				<h4 class="modal-title">Modal Header</h4>
+				<h4 class="modal-title">Summary</h4>
 			</div>
 			<div class="modal-body">
 				<table class="summary">

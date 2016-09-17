@@ -76,19 +76,6 @@ function scrollCashflow(last){
 	$(".cashflow").scrollTop(last.position().top);
 }
 
-function resetInsertForm(){
-	$("#dateinput").datepicker("setDate", new Date());
-	$("#amountinput").val("");
-	$("#detailsinput").val("");
-
-	var categoryinput = $("#categoryinput");
-	categoryinput.val("");
-	changeFlowChoice();
-
-	categoryinput.data('selectpicker').$button.focus();
-	categoryinput.parent().find("input").val("");
-}
-
 function reloadList(last_id, last_date, new_date){
 	var data = null;
 
@@ -147,11 +134,22 @@ function submitInsert(){
 		if (data.message) {
 			alert("Error: " + data.message);
 		} else {
-			var absoluteAmount = flow * amount;
+			// recalculate summary
+			calculateSummary(account, flow * amount);
 
-			calculateSummary(account, absoluteAmount);
-			resetInsertForm();
+			// reset form
+			$("#dateinput").datepicker("setDate", new Date());
+			$("#amountinput").val("");
+			$("#detailsinput").val("");
 
+			var categoryinput = $("#categoryinput");
+			categoryinput.val("");
+			changeFlowChoice();
+
+			categoryinput.data('selectpicker').$button.focus();
+			categoryinput.parent().find("input").val("");
+
+			// reload list
 			var firstEntry = $(".entry").last();
 			var minid = firstEntry.data("id");
 			var datefirst = firstEntry.find(".entry-date").text();
@@ -211,16 +209,19 @@ function submitTransfer(){
 		if (data.message) {
 			alert("Error: " + data.message);
 		} else {
+			// recalculate summary
 			calculateSummary(account_from, -amount);
 			calculateSummary(account_to, amount);
-			resetInsertForm();
 
+			// reset transfer form
 			$("#date-transfer").datepicker("setDate", new Date());
 			$("#amount-transfer").val("").focus();
 			$("#details-transfer").val("");
 			$("#account-from-transfer").val("From: Cash").selectpicker('refresh');
 			$("#account-to-transfer").val("To: Cash").selectpicker('refresh');
 
+
+			// reload list
 			var firstEntry = $(".entry").last();
 			var minid = firstEntry.data("id");
 			var datefirst = firstEntry.find(".entry-date").text();

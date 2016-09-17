@@ -149,14 +149,12 @@ class Database(object):
 
 		return result
 
-	def getEntries(self, minid=None, maxid=None, date_first=None, date_last=None, flow=None, category_id=None, limit=None, orderby=[]):
+	def getEntries(self, minid=None, maxid=None, date_first=None, date_last=None, flow=None, category_ids=None, limit=None, orderby=[]):
 
 		conditions = []
 
 		def addCondition(condition_text):
 			conditions.append("(" + condition_text + ")")
-
-		start_category, end_category = None, None
 
 		if (date_first and date_last):
 			addCondition("entry_date BETWEEN :datefirst AND :datelast")
@@ -171,13 +169,31 @@ class Database(object):
 
 		if (flow):	addCondition("flow = :flow")
 
-		if (category_id):
-			if (category_id < TRANSFER_IN_ID):
-				start_category = category_id * SUBCATEGORY_SIZE;
-				end_category = (category_id + 1) * SUBCATEGORY_SIZE - 1;
-				addCondition("category_id BETWEEN :start_category AND :end_category")
+		categories = {}
+
+		if (category_ids and len(category_ids)):
+			orconditions = []; n = 0;
+			for category_id in category_ids:
+				if (category_id < TRANSFER_IN_ID):
+					key1 = "category_id" + str(n)
+					key2 = "category_id" + str(n+1)
+					n += 2
+
+					categories[key1] = category_id * SUBCATEGORY_SIZE
+					categories[key2] = (category_id + 1) * SUBCATEGORY_SIZE - 1
+
+					orconditions.append("(category_id BETWEEN :{0} AND :{1})".format(key1, key2))
+				else:
+					key = "category_id" + str(n)
+					n += 1
+					categories[key] = category_id
+					orconditions.append("(category_id = :{0})".format(key))
+
+			if len(orconditions) == 1:
+				conditions.append(orconditions[0])
 			else:
-				addCondition("category_id = :category_id")
+				addCondition( " OR ".join(orconditions) )
+
 
 		querytext = "SELECT * FROM cashflow"
 
@@ -205,12 +221,15 @@ class Database(object):
 
 		c = self.cursor()
 
+		# 	"category_id": category_id, "start_category": start_category, 
+
 		data = { 
 			"datefirst": date_first, "datelast": date_last, "flow": flow, 
-			"category_id": category_id, "start_category": start_category, 
 			"end_category": end_category, "limit": limit, "minid": minid,
 			"maxid": maxid
 		}
+
+		data.update(categories)
 
 		c.execute(querytext, data)
 		result = [entryObject(row) for row in c.fetchall()]

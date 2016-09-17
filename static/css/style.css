@@ -7,7 +7,9 @@
 /**** ACTION BAR ****/
 
 .actionbar{
-	table-layout: fixed;
+	/*table-layout: fixed;*/
+	border: 1px solid #eee;
+	border-top: none;
 }
 
 .actionbar input{
@@ -24,6 +26,7 @@
 
 .actionbar td.actiontd{
 	padding-right: 0;
+	padding-left: 0;
 }
 
 .actiontd button{
@@ -39,7 +42,7 @@
 /**** ACTION CHOOSER ****/
 
 #trchoose {
-	float:right;  margin-left: -1px;
+	float:right;  margin-left: -0.5em; margin-right: 0.25em;
 }
 
 #trchoose td{
@@ -82,14 +85,23 @@
 	padding: 0.25em 0.5em;
 }
 
-.entrytable tbody, .entrytable thead
-{
+.entrytable thead {
     display: block;
+}
+
+.entrytable tbody{
+	display: block;
+	border: 1px solid #eee;
 }
 
 .cashflow{
 	overflow: auto;
 	height: 405px;
+}
+
+.theader {
+	border: 1px solid #eee;
+	border-bottom: none;
 }
 
 .theader th{
@@ -165,7 +177,7 @@ body{
 }
 
 .col4{
-	width: 250px;
+	width: 280px;
 }
 
 .col5{

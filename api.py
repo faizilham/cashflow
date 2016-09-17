@@ -45,7 +45,8 @@ def construct_blueprint(db, cache):
 		amount = int(request.form.get("amount"))
 		details = request.form.get("details")
 
-		print(date, account_from, account_to, amount, details);
+		details_prefix = u"[{0} >> {1}]".format(account_from, account_to)
+		details = details_prefix if not details else "{0} {1}".format(details_prefix, details)
 
 		db.transfer(date, account_from, account_to, amount, details)
 
