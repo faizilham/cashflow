@@ -123,6 +123,10 @@ function submitInsert(){
 		return false;
 	}
 
+	amount = parseInt(amount);
+
+	//console.log(date, account, flow, category, amount, details);
+
 	$("#entryForm").prop("disabled", true);
 
 	$.post("/api/entries", {
@@ -138,7 +142,7 @@ function submitInsert(){
 			calculateSummary(account, flow * amount);
 
 			// reset form
-			$("#dateinput").datepicker("setDate", new Date());
+			$("#dateinput").val(moment().format("YYYY-MM-DD"));
 			$("#amountinput").val("");
 			$("#detailsinput").val("");
 
@@ -196,6 +200,8 @@ function submitTransfer(){
 		return false;
 	}
 
+	amount = parseInt(amount);
+
 	//console.log(date, account_from, account_to, amount, details);
 
 	$("#transferForm").prop("disabled", true);
@@ -214,7 +220,7 @@ function submitTransfer(){
 			calculateSummary(account_to, amount);
 
 			// reset transfer form
-			$("#date-transfer").datepicker("setDate", new Date());
+			$("#date-transfer").val(moment().format("YYYY-MM-DD"));
 			$("#amount-transfer").val("").focus();
 			$("#details-transfer").val("");
 			$("#account-from-transfer").val("From: Cash").selectpicker('refresh');

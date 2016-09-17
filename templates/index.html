@@ -1,15 +1,17 @@
 {% extends "base.html" %}
 {% block title %}Home{% endblock %}
 {% block heads %}
-	<link rel="stylesheet" href="static/css/jquery-ui.min.css" type="text/css" />
+	
 	<link rel="stylesheet" href="static/css/bootstrap.min.css" type="text/css" />
 	<link rel="stylesheet" href="static/css/bootstrap-select.min.css" type="text/css" />
+	<link rel="stylesheet" href="static/css/bootstrap-datetimepicker.min.css" type="text/css" />
 	<link rel="stylesheet" href="static/css/style.css" type="text/css" />
 
 	<script type="text/javascript" src="static/js/jquery.min.js"></script>
-	<script type="text/javascript" src="static/js/jquery-ui.min.js"></script>
+	<script type="text/javascript" src="static/js/moment.min.js"></script>
 	<script type="text/javascript" src="static/js/bootstrap.min.js"></script>
 	<script type="text/javascript" src="static/js/bootstrap-select.min.js"></script>
+	<script type="text/javascript" src="static/js/bootstrap-datetimepicker.min.js"></script>
 
 	<script type="text/javascript">
 		var accounts = {}
@@ -27,7 +29,13 @@
 	<script type="text/javascript" src="static/js/main.js"></script>
 	<script type="text/javascript">
 
-		$(".datepick").datepicker({"dateFormat": "yy-mm-dd"}).datepicker("setDate", new Date());
+		$(".datepick").datetimepicker({
+			"viewMode": "days",
+			'format': 'YYYY-MM-DD',
+			"defaultDate": new Date()
+		});
+
+
 		$("#flowinput").on("changed.bs.select", changeFlowChoice);
 		$(".numinput").keypress(validateNumberTextbox);
 
@@ -73,8 +81,14 @@
 		<tr id="trinsert" class="traction">
 		<fieldset id="entryForm">
 		<form onsubmit="return submitInsert()">
-			<td class="col1">
-				<input class="form-control datepick" id="dateinput" name="date" autocomplete="off"/>
+			<td class="tdaction col1">
+				<div class='input-group date'>
+					<input class="form-control datepick" id="dateinput" name="date" autocomplete="off"/>
+					<span class="input-group-addon">
+						<span class="glyphicon glyphicon-calendar"></span>
+					</span>
+				</div>
+				
 			</td>
 			<td class="col1">
 				<select id="accountinput" name="account" class="selectpicker form-control">
@@ -114,8 +128,14 @@
 		<fieldset id="transferForm">
 		<form onsubmit="return submitTransfer()">
 			<td class="col1">
-				<input class="form-control datepick" id="date-transfer" name="date-transfer" autocomplete="off"/>
+				<div class='input-group date'>
+					<input class="form-control datepick" id="date-transfer" name="date-transfer" autocomplete="off"/>
+					<span class="input-group-addon">
+						<span class="glyphicon glyphicon-calendar"></span>
+					</span>
+				</div>
 			</td>
+
 			<td colspan="2" class="col1a">
 				<select id="account-from-transfer" name="account-from" class="selectpicker form-control">
 					{% for account in accounts %}
@@ -150,8 +170,6 @@
 	<div>
 		<button class="btn btn-info" data-toggle="modal" data-target="#summary-modal">Summary</button>
 	</div>
-	
-
 	
 	<div class="modal" id="summary-modal" role="dialog">
 		<div class="modal-dialog">

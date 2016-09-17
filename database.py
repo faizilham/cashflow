@@ -225,8 +225,7 @@ class Database(object):
 
 		data = { 
 			"datefirst": date_first, "datelast": date_last, "flow": flow, 
-			"end_category": end_category, "limit": limit, "minid": minid,
-			"maxid": maxid
+			"limit": limit, "minid": minid, "maxid": maxid
 		}
 
 		data.update(categories)

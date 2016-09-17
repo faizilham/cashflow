@@ -7,20 +7,19 @@
 /**** ACTION BAR ****/
 
 .actionbar{
-	/*table-layout: fixed;*/
 	border: 1px solid #eee;
 	border-top: none;
 }
-
+/*
 .actionbar input{
 	width: 100%;
-}
+}*/
 
-.actionbar td, .actionbar th{
+.actionbar td{
 	padding: 0.5em 0.25em;
 }
 
-.actionbar tr{
+.actionbar .traction, #trchoose{
 	display: block;
 }
 
@@ -66,7 +65,7 @@
 /**** INSERT ACTION BAR ****/
 
 .datepick {
-	text-align: center;
+	/*text-align: center;*/
 }
 
 .numinput{
@@ -161,11 +160,11 @@ body{
 /**** TABLE STRUCTURE ****/
 
 .col1{
-	width: 120px;
+	width: 150px;
 }
 
 .col1a {
-	width: 240px;
+	width: 300px;
 }
 
 .col2{
