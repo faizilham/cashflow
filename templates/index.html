@@ -26,67 +26,16 @@
 {% block footscript %}
 	<script type="text/javascript" src="static/js/main.js"></script>
 	<script type="text/javascript">
-		// init datepicker
+	
 		$(".datepick").datepicker({"dateFormat": "yy-mm-dd"}).datepicker("setDate", new Date());
-
-		// init combo-boxes 
-		function changeFlowChoice() {
-			var enabledType = $("#flowinput").val();
-			var disabledType = -enabledType;
-
-			var categoryinput = $("#categoryinput");
-
-
-			categoryinput.find("[data-flowtype='" + enabledType + "']").prop("disabled", false)
-						 .show();
-
-			categoryinput.find("[data-flowtype='" + disabledType + "']").prop("disabled", true)
-						 .hide();
-
-			categoryinput.val("");
-			categoryinput.selectpicker('refresh');
-		}
-
 		$("#flowinput").on("changed.bs.select", changeFlowChoice);
-
-		function validateNumber(e){
-			if (e.which != 8 && e.which != 0 && (e.which < 48 || e.which > 57)) {
-				return false;
-			} else {
-				return true;
-			}
-		}
-
-		$(".numinput").keypress(validateNumber);
-
-		// function autofillTabKeyFunctionBuilder(picker_obj){
-		// 	var f = function(e){
-
-		// 		console.log(e.which);
-		// 		if (e.which === 8){
-		// 			picker_obj.val(picker_obj.parent().find("li.active").text());
-		// 			picker_obj.selectpicker('refresh');
-		// 		}
-				
-		// 		return true;
-		// 	}
-
-		// 	return f;
-		// }
-
-		// function initAutoFill() {
-		// 	var categoryinput = $("#categoryinput");
-		// 	categoryinput.parent().keypress(autofillTabKeyFunctionBuilder(categoryinput));
-		// }
-
-		// initAutoFill();
+		$(".numinput").keypress(validateNumberTextbox);
 
 		changeFlowChoice();
 		scrollCashflow($('.entry').last());
 	</script>
 {% endblock %}
 {% block content %}
-	<!--<button onclick="toggleSummary(this)">Open Summary</button>-->
 	<div>
 		<button class="btn btn-info" data-toggle="modal" data-target="#summary-modal">Summary</button>
 	</div>

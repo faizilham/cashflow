@@ -1,5 +1,6 @@
 // functions
 
+/**** HELPERS ****/
 function formatMoney(amount){
 	var negative = false;
 	if (amount < 0){
@@ -27,6 +28,16 @@ function formatMoney(amount){
 	return stramount;
 }
 
+function validateNumberTextbox(e){
+	if (e.which != 8 && e.which != 0 && (e.which < 48 || e.which > 57)) {
+		return false;
+	} else {
+		return true;
+	}
+}
+
+
+/**** VIEW CHANGER ****/
 function calculateSummary(account, absoluteAmount){
 	var monthly = $("#" + account + "-monthly");
 
@@ -42,6 +53,23 @@ function calculateSummary(account, absoluteAmount){
 	} else {
 		monthly.removeClass("debit");
 	}
+}
+
+function changeFlowChoice() {
+	var enabledType = $("#flowinput").val();
+	var disabledType = -enabledType;
+
+	var categoryinput = $("#categoryinput");
+
+
+	categoryinput.find("[data-flowtype='" + enabledType + "']").prop("disabled", false)
+				 .show();
+
+	categoryinput.find("[data-flowtype='" + disabledType + "']").prop("disabled", true)
+				 .hide();
+
+	categoryinput.val("");
+	categoryinput.selectpicker('refresh');
 }
 
 function scrollCashflow(last){
@@ -81,6 +109,13 @@ function reloadList(last_id, last_date, new_date){
 function deleteRow(_id){
 	$("#entry" + _id).remove();
 }
+
+function chooseAction(actiontype){
+	$(".traction").addClass("hidden");
+	$("#tr"+actiontype).removeClass("hidden");
+}
+
+/**** API CALL ****/
 
 function submitInsert(){
 	var date = $("#dateinput").val();
@@ -198,9 +233,4 @@ function submitTransfer(){
 
 
 	return false;
-}
-
-function chooseAction(actiontype){
-	$(".traction").addClass("hidden");
-	$("#tr"+actiontype).removeClass("hidden");
 }
