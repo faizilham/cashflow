@@ -2,36 +2,90 @@ body{
 	font-family: sans-serif;
 }
 
-.cashflow input{
+
+.actionbar{
+	table-layout: fixed;
+}
+
+.actionbar input{
 	width: 100%;
 }
+
+.actionbar td, .actionbar th{
+	padding: 0.5em 0.25em;
+}
+
+.actionbar tr{
+	display: block;
+}
+
+.actionbar td.actiontd{
+	padding-right: 0;
+}
+
+.actiontd button{
+	-webkit-border-top-right-radius: 0;
+	-moz-border-top-right-radius: 0;
+	border-top-right-radius: 0;
+
+	-webkit-border-bottom-right-radius: 0;
+	-moz-border-bottom-right-radius: 0;
+	border-bottom-right-radius: 0;
+}
+
+#trchoose {
+	float:right;  margin-left: -1px;
+}
+
+#trchoose td{
+	padding-left:0;
+	padding-right:0;
+}
+
+#actionchoose{
+	-webkit-border-top-left-radius: 0;
+	-moz-border-top-left-radius: 0;
+	border-top-left-radius: 0;
+
+	-webkit-border-bottom-left-radius: 0;
+	-moz-border-bottom-left-radius: 0;
+	border-bottom-left-radius: 0;
+}
+
 
 .cashtext {
 	text-align: right;
 }
 
-td{
-	padding: 0.25em 0.5em;
-}
 
-#dateinput{
+.datepick {
 	text-align: center;
 }
 
-#amountinput{
+.numinput{
 	text-align: right;
-}
-
-
-#trform{
-	/*display: none;*/
 }
 
 .actiontd{
 	text-align: center;
 }
 
-.theader td{
+
+.entrytable td, .entrytable th{
+	padding: 0.25em 0.5em;
+}
+
+.entrytable tbody, .entrytable thead
+{
+    display: block;
+}
+
+.cashflow{
+	overflow: auto;
+	height: 405px;
+}
+
+.theader th{
 	text-align: center;
 	font-weight: bold;
 }
@@ -65,8 +119,17 @@ body {
 	width: 120px;
 }
 
+.col1a {
+	width: 240px;
+}
+
+.col1a input{
+	width: 40%;
+	display: inline;
+}
+
 .col2{
-	width: 275px;
+	width: 280px;
 }
 
 .col3{
@@ -77,6 +140,14 @@ body {
 	width: 250px;
 }
 
+.col5{
+	width: 50px;
+}
+
+.center{
+	text-align: center;
+}
+
 a.rowaction, a.rowaction:active, a.rowaction:focus{
 	outline: none;
 	color: #0099dd;
@@ -85,4 +156,9 @@ a.rowaction, a.rowaction:active, a.rowaction:focus{
 a.rowaction:hover{
 	outline: none;	
 	color: #0077bb;
+}
+
+#actionchoose{
+	padding-left: 0.25em;
+	padding-right: 0.25em;
 }

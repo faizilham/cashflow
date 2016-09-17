@@ -44,7 +44,11 @@ function calculateSummary(account, absoluteAmount){
 	}
 }
 
-function resetForm(){
+function scrollCashflow(last){
+	$(".cashflow").scrollTop(last.position().top);
+}
+
+function resetInsertForm(){
 	$("#dateinput").datepicker("setDate", new Date());
 	$("#amountinput").val("");
 	$("#detailsinput").val("");
@@ -52,13 +56,25 @@ function resetForm(){
 	var categoryinput = $("#categoryinput");
 	categoryinput.val("");
 	changeFlowChoice();
+
+	categoryinput.data('selectpicker').$button.focus();
+	categoryinput.parent().find("input").val("");
 }
 
-function reloadList(data){
+function reloadList(last_id, last_date, new_date){
+	var data = null;
+
+	if (new_date && (new Date(last_date) <= new Date(new_date))){
+		data = {"minid": last_id, "datefirst": last_date}
+	}
+
 	$.get("/entrylist", data || {}, function(result){
 		if (!data) $(".entry").remove();
 
-		$(result).insertAfter($("#trform"));
+		var newEntry = $(result);
+
+		newEntry.insertBefore($("#tranchor"));
+		scrollCashflow(newEntry);
 	});
 }
 
@@ -66,8 +82,7 @@ function deleteRow(_id){
 	$("#entry" + _id).remove();
 }
 
-function submitForm(){
-
+function submitInsert(){
 	var date = $("#dateinput").val();
 	var account = $("#accountinput").val();
 	var flow = $("#flowinput").val();
@@ -100,13 +115,13 @@ function submitForm(){
 			var absoluteAmount = flow * amount;
 
 			calculateSummary(account, absoluteAmount);
-			resetForm();
+			resetInsertForm();
 
-			var firstEntry = $(".entry").first();
+			var firstEntry = $(".entry").last();
 			var minid = firstEntry.data("id");
 			var datefirst = firstEntry.find(".entry-date").text();
 
-			reloadList({"minid": minid, "datefirst": datefirst});
+			reloadList(minid, datefirst, date);
 		}
 					
 	}, "json");
@@ -130,18 +145,62 @@ function deleteEntry(_id, account, absoluteAmount){
 	}
 }
 
-function toggleSummary(btn){
-	var closedText = "Open Summary";
-	var openText = "Close Summary";
+function submitTransfer(){
+	var date = $("#date-transfer").val();
+	var account_from = $("#account-from-transfer").val();
+	var account_to = $("#account-to-transfer").val();
+	var amount = $("#amount-transfer").val();
+	var details = $("#details-transfer").val();
 
-	var btn = $(btn);
-	var summary = $(".summary");
-
-	if (btn.html() === closedText){
-		btn.html(openText);
-		summary.removeClass("hidden");
-	} else {
-		btn.html(closedText);
-		summary.addClass("hidden");
+	if (!$.isNumeric(amount) || amount <= 0){
+		alert("Invalid amount");
+		return false;
+	} else if (isNaN(new Date(date).getTime())) {
+		alert("Invalid date format");
+		return false;
+	} else if (account_from === account_to) {
+		alert("Account 'from' and 'to' must be different");
+		return false;
 	}
+
+	//console.log(date, account_from, account_to, amount, details);
+
+	$("#transferForm").prop("disabled", true);
+
+	$.post("/api/entries/transfer", {
+		"date": date, "account_from": account_from, "account_to": account_to,
+		"amount": amount, "details": details
+	}, function(data){
+		$("#transferForm").prop("disabled", false);
+
+		if (data.message) {
+			alert("Error: " + data.message);
+		} else {
+			calculateSummary(account_from, -amount);
+			calculateSummary(account_to, amount);
+			resetInsertForm();
+
+			$("#date-transfer").datepicker("setDate", new Date());
+			$("#amount-transfer").val("").focus();
+			$("#details-transfer").val("");
+			$("#account-from-transfer").val("From: Cash").selectpicker('refresh');
+			$("#account-to-transfer").val("To: Cash").selectpicker('refresh');
+
+			var firstEntry = $(".entry").last();
+			var minid = firstEntry.data("id");
+			var datefirst = firstEntry.find(".entry-date").text();
+
+			reloadList(minid, datefirst, date);
+		}
+					
+	}, "json");
+
+
+
+	return false;
+}
+
+function chooseAction(actiontype){
+	$(".traction").addClass("hidden");
+	$("#tr"+actiontype).removeClass("hidden");
 }

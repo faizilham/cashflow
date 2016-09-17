@@ -45,6 +45,8 @@ def construct_blueprint(db, cache):
 		amount = int(request.form.get("amount"))
 		details = request.form.get("details")
 
+		print(date, account_from, account_to, amount, details);
+
 		db.transfer(date, account_from, account_to, amount, details)
 
 		return reply(True)

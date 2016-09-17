@@ -86,6 +86,9 @@ class Database(object):
 
 		c.execute("INSERT INTO cashflow VALUES (?, ?, ?, ?, ?, ?, ?)", data_out)
 		c.execute("INSERT INTO cashflow VALUES (?, ?, ?, ?, ?, ?, ?)", data_in)
+
+		c.execute("UPDATE accounts SET fund = fund - ? WHERE name = ?", (amount, account_from))
+		c.execute("UPDATE accounts SET fund = fund + ? WHERE name = ?", (amount, account_to))
 		self.commitclose(c)
 
 		return id_out, id_in

@@ -21,7 +21,7 @@ app.register_blueprint(apiroute, url_prefix='/api')
 
 def get_entries(form={}):
 	query = {
-		"orderby": [("entry_date", False), ("id", False)]
+		"orderby": [("entry_date", True), ("id", True)]
 	}
 
 	if form.get("minid"): query["minid"] = form.get("minid")
