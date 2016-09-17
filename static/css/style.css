@@ -1,7 +1,10 @@
-body{
-	font-family: sans-serif;
+/*** MODALS ****/
+
+.summary{
+	width: 100%;
 }
 
+/**** ACTION BAR ****/
 
 .actionbar{
 	table-layout: fixed;
@@ -33,6 +36,8 @@ body{
 	border-bottom-right-radius: 0;
 }
 
+/**** ACTION CHOOSER ****/
+
 #trchoose {
 	float:right;  margin-left: -1px;
 }
@@ -50,13 +55,12 @@ body{
 	-webkit-border-bottom-left-radius: 0;
 	-moz-border-bottom-left-radius: 0;
 	border-bottom-left-radius: 0;
+
+	padding-left: 0.25em;
+	padding-right: 0.25em;
 }
 
-
-.cashtext {
-	text-align: right;
-}
-
+/**** INSERT ACTION BAR ****/
 
 .datepick {
 	text-align: center;
@@ -66,10 +70,13 @@ body{
 	text-align: right;
 }
 
-.actiontd{
+
+.entry-date{
 	text-align: center;
 }
 
+
+/**** ENTRY TABLE ****/
 
 .entrytable td, .entrytable th{
 	padding: 0.25em 0.5em;
@@ -94,16 +101,44 @@ body{
 	background: #eee;
 }
 
-.entry-date{
+a.rowaction, a.rowaction:active, a.rowaction:focus{
+	outline: none;
+	color: #0099dd;
+}
+
+a.rowaction:hover{
+	outline: none;	
+	color: #0077bb;
+}
+
+.actiontd{
 	text-align: center;
 }
+
+
+/**** GENERAL ****/
 
 .debit {
 	color:#ff0000;
 }
 
+.cashtext {
+	text-align: right;
+}
+
 .hidden {
 	display: none;
+}
+
+.center{
+	text-align: center;
+}
+
+/**** STRUCTURAL ****/
+
+body{
+	font-family: sans-serif;
+	text-align: center;
 }
 
 .content {
@@ -111,9 +146,7 @@ body{
 	text-align: left;
 }
 
-body {
-	text-align: center;
-}
+/**** TABLE STRUCTURE ****/
 
 .col1{
 	width: 120px;
@@ -121,11 +154,6 @@ body {
 
 .col1a {
 	width: 240px;
-}
-
-.col1a input{
-	width: 40%;
-	display: inline;
 }
 
 .col2{
@@ -144,21 +172,3 @@ body {
 	width: 50px;
 }
 
-.center{
-	text-align: center;
-}
-
-a.rowaction, a.rowaction:active, a.rowaction:focus{
-	outline: none;
-	color: #0099dd;
-}
-
-a.rowaction:hover{
-	outline: none;	
-	color: #0077bb;
-}
-
-#actionchoose{
-	padding-left: 0.25em;
-	padding-right: 0.25em;
-}
