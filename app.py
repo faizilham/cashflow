@@ -3,7 +3,7 @@
 from flask import Flask, render_template, request
 from database import Database
 from helpers import format_money, Cache
-import api, yaml
+import api, yaml, json
 
 config = None
 with open("config.yml", 'r') as f:
@@ -39,7 +39,7 @@ def index_page():
 	for account in accounts:
 		account["current"] = sum((entry["flow"] * entry["amount"]) for entry in cashflow if entry["account"] == account["name"])
 
-	return render_template("index.html", format_money=format_money, cashflow=cashflow, categories=cache.categories, categoryDict=cache.categoryDict, accounts=accounts)
+	return render_template("index.html", format_money=format_money, stringify=json.dumps, cashflow=cashflow, categories=cache.categories, categoryDict=cache.categoryDict, accounts=accounts)
 
 @app.route("/components/cashflow")
 def entrylist_page():
