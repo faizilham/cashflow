@@ -297,39 +297,38 @@ function getRandomColor() {
     return hsv_to_rgb(h, s, v);
 }
 
-function createAggregate(entries, aggregate_function, label_function, color_function, value_function){
+function createAggregate(entries, id_function, label_function, aggregate_function, value_function){
 	var aggregate = {};
-	var sum = 0;
 
-	if (!color_function) color_function = getRandomColor;
 	if (!value_function) value_function = function(entry){return entry.amount;};
+	if (!aggregate_function) aggregate_function = function(agg) {return agg.value;};
 
 	for (var i in entries){
 		var entry = entries[i];
 		
 		if ((entry.flow === -1) && (entry.category_id !== 20000)) {
 			
-			var a_id = aggregate_function(entry);
+			var a_id = id_function(entry);
 			var val = value_function(entry);
 
 			if (aggregate[a_id]){
 				aggregate[a_id].value += val;
+				aggregate[a_id].count++;
 			} else {
 				aggregate[a_id] = {
 					"label": label_function(entry),
-					"value": val
+					"value": val,
+					"count": 1,
+					"id": a_id
 				};
 			}
-
-			sum += val;
 		}
 	}
 
 	var result = {
 		"labels": [],
 		"data": [],
-		"colors": [],
-		"sum": sum
+		"colors": []
 	};
 
 
@@ -339,26 +338,26 @@ function createAggregate(entries, aggregate_function, label_function, color_func
 		var id = ids[x];
 
 		result.labels.push(aggregate[id].label);
-		result.data.push(aggregate[id].value);
-		result.colors.push(color_function(aggregate[id], sum));
+		result.data.push(aggregate_function(aggregate[id]));
+		result.colors.push(getRandomColor());
 	}
 
 	return result;
 }
 
-function createSortedAggregate(entries, aggregate_function, label_function, value_function){
+function createSortedAggregate(entries, id_function, label_function, value_function){
 	if (!value_function) value_function = function(entry){return entry.amount;};
 
 	var data = [0];
-	var last_id= aggregate_function(entries[0]);
+	var last_id= id_function(entries[0]);
 	var labels = [label_function(entries[0])];
-	var sum = 0; n = 0;
+	var n = 0;
 
 	for (var i in entries){
 		var entry = entries[i];
 
 		if ((entry.flow === -1) && (entry.category_id !== 20000)) {
-			var a_id = aggregate_function(entry);
+			var a_id = id_function(entry);
 			var val = value_function(entry);
 
 			if (last_id === a_id){
@@ -369,15 +368,12 @@ function createSortedAggregate(entries, aggregate_function, label_function, valu
 				labels.push(label_function(entry));
 				n++;
 			}
-
-			sum += val;
 		}
 	}
 
 	return {
 		"labels": labels,
 		"data": data,
-		"sum": sum
 	};
 }
 
@@ -406,47 +402,148 @@ function buildTimelineChart(){
 	});
 }
 
+function getAmountOfWeekDays(date1, date2, weekday) {
+	var dif = (7 + (weekday - date1.weekday())) % 7 + 1;
+	var n = date2.diff(date1, "days") + 1;
+
+	return Math.floor((n - dif) / 7) + 1;
+}
+
 function buildTimeDistChart(){
+	var startDate = new moment(entries[0].entry_date);
+	var endDate = new moment(entries[entries.length - 1].entry_date);
+
 	var color = hsv_to_rgb(0, 0.6, 0.9);
 	var result = createAggregate(entries, function(entry){ 
-					return moment(entry.entry_date).format("d");
+					return moment(entry.entry_date).weekday();
 				}, function (entry){
 					return moment(entry.entry_date).format("dddd");
+				}, function (agg){
+					return Math.round(agg.value / getAmountOfWeekDays(startDate, endDate, agg.id));
 				});
 
-	new Chart($("#stat"), {
-		"type":"bar",
-		"data": {
-			"labels": result.labels,
-			"datasets":[
-				{
-					"label": "Expense",
-					"data": result.data,
-					"backgroundColor": color,
-				}
-			]
-		},
-		"options": statChartOptions				
-	});
+	// var sum = 0;
+	// for (var i in result.data) sum += result.data[i];
+
+	BarChart(result.labels, result.data, color);
+	
 }
 
 function buildCategoryChart(){
+	var valueOption = $("#category-value-picker").val();
+	var aggregate_function = null; 
+	var chartType = "doughnut"; var formatFunction = null;
+
+	switch(valueOption){
+		case "daily": {
+
+			var startDate = new moment(entries[0].entry_date);
+			var endDate = new moment(entries[entries.length - 1].entry_date);
+			var days = endDate.diff(startDate, 'days') + 1;
+
+			
+			aggregate_function = function (agg){
+				return Math.round(agg.value / days);
+			};
+		} break;
+		case "price": {
+			aggregate_function = function (agg){
+				return agg.value / agg.count;
+			};
+			chartType = "bar";
+		}
+		break;
+		case "frequency": {
+			var startDate = new moment(entries[0].entry_date);
+			var endDate = new moment(entries[entries.length - 1].entry_date);
+			var days = endDate.diff(startDate, 'days') + 1;
+
+
+			aggregate_function = function (agg){
+				return agg.count / days;
+			};
+			chartType = "bar";
+			formatFunction = frequencyFormat;
+		}
+		break;
+	}
 
 	var result = createAggregate(entries, function(entry){
 					return entry.category_id;
 				}, function(entry){
 					return categories[entry.category_id].name;
-				});
+				}, aggregate_function);	
+
+	if (chartType === "bar"){
+		BarChart(result.labels, result.data, hsv_to_rgb(0, 0.6, 0.9), formatFunction);
+	} else {
+		var sum = 0;
+		for (var i in result.data) sum += result.data[i];
+
+		DoughnutChart(result.labels, result.data, result.colors, sum, formatFunction);	
+	}
+}
+
+function frequencyFormat(val){
+	var e = 0.0000000001;
+
+	if (Math.abs(val) < e) return "Never";
+
+	var d = 1 / val;
+	if (Math.abs(d - 1) < e){
+		return "Everyday";
+	} else if (d < 1) {
+		return (Math.round(100*val)/100) + " times a day";
+	} else {
+		return "Every " + (Math.round(100*d)/100) + " days";						
+	}
+}
+
+function BarChart(labels, data, colors, formatFunction){
+	if (!formatFunction) formatFunction = formatMoney;
+	new Chart($("#stat"), {
+		"type":"bar",
+		"data": {
+			"labels": labels,
+			"datasets":[
+				{
+					"label": "Expense",
+					"data": data,
+					"backgroundColor": colors,
+				}
+			]
+		},
+		"options": {
+			"scales": {
+				"yAxes": [{
+					"ticks": {
+						"beginAtZero":true,
+						"callback": formatFunction
+					}
+				}]
+			},
+
+			"tooltips": {
+				"callbacks": {
+					"label": function(tooltipItems, data) { return formatFunction(tooltipItems.yLabel);}
+				}
+			}
+		}		
+	});
+}
+
+function DoughnutChart(labels, data, colors, sum, formatFunction){
+	if (!formatFunction) formatFunction = formatMoney;
 
 	new Chart($("#stat"), {
 		"type":"doughnut",
 		"data": {
-			"labels": result.labels,
+			"labels": labels,
 			"datasets":[
 				{
-					"data": result.data,
-					"backgroundColor": result.colors,
-					"sum": result.sum
+					"data": data,
+					"backgroundColor": colors,
+					"sum": sum
 				}
 			]
 		},
@@ -459,7 +556,7 @@ function buildCategoryChart(){
 						var percentage = Math.round(100 * amount / dataset.sum);
 						var label = data.labels[tooltipItems.index];
 
-						return label + ": " + formatMoney(amount) + " (" + percentage +"%)";
+						return label + ": " + formatFunction(amount) + " (" + percentage +"%)";
 					}
 				}
 			}

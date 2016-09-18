@@ -22,6 +22,7 @@
 
 			$("#flowinput").on("changed.bs.select", changeFlowChoice);
 			$("#chart-picker").on("changed.bs.select", redrawChart);
+			$("#category-value-picker").on("changed.bs.select", redrawChart);
 			$(".numinput").keypress(validateNumberTextbox);
 
 			changeFlowChoice();
@@ -195,8 +196,8 @@
 			<div class="statistic-tab-container">
 				<select id="chart-picker" class="selectpicker form-control" data-width="auto">
 					<option value="timeline" selected>Timeline</option>
-					<option value="timedist">Time Distribution</option>
 					<option value="category">Category Distribution</option>
+					<option value="timedist">Time Distribution</option>
 				</select>
 
 				<select id="timeline-picker" class="selectpicker form-control hidden" data-width="auto">
@@ -204,6 +205,13 @@
 					<option value="weekly">Weekly</option>
 					<option value="monthly">Monthly</option>
 					<option value="yearly">Yearly</option>
+				</select>
+
+				<select id="category-value-picker" class="selectpicker form-control" data-width="auto">
+					<option value="total" selected>Total</option>
+					<option value="daily">Daily Average</option>
+					<option value="price">Avg. Per Purchase</option>
+					<option value="frequency">Frequency</option>
 				</select>
 				<div id="canvas-wrapper">
 					<canvas id="stat"></canvas>
