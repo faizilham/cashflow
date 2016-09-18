@@ -260,48 +260,12 @@ function redrawChart(){
 
 	switch($("#chart-picker").val()){
 		case "timeline": buildTimelineChart(); break;
-		case "timedist": break;
+		case "timedist": buildTimeDistChart(); break;
 		case "category": buildCategoryChart(); break;
 	}
 }
 
-function buildTimelineChart(){
-	var data_daily_debit = [0];
-	var data_labels = [entries[0].entry_date];
-	var lastDate = entries[0].entry_date;
-	var n = 0;
 
-	for (var i in entries){
-		var entry = entries[i];
-
-		if ((entry.flow === -1) && (entry.category_id !== 20000)) {
-			if (entry.entry_date === lastDate){
-				data_daily_debit[n] += entry.amount;
-			} else {
-				data_daily_debit.push(entry.amount);
-				lastDate = entry.entry_date;
-				data_labels.push(lastDate);
-				n++;
-			}
-		}
-	}
-
-	new Chart($("#stat"), {
-		"type":"line",
-		"data": {
-			"labels": data_labels,
-			"datasets":[
-				{
-					"label": "expense",
-					"data": data_daily_debit,
-					"backgroundColor": "rgba(0,0,0,0)",
-					"borderColor": "rgba(255,0,0,0.5)"
-				}
-			]
-		},
-		"options": statChartOptions				
-	});
-}
 
 function hsv_to_rgb(h, s, v){
 	var h_i = Math.floor(h*6);
@@ -321,7 +285,7 @@ function hsv_to_rgb(h, s, v){
 		case 5: rgb = [v, p, q]; break;
 	}
 
-	return rgb.map(function(c){ return Math.floor(c*256); });
+	return "#" + rgb.map(function(c){return Math.floor(c*256).toString(16);}).join("");
 }
 
 function getRandomColor() {
@@ -330,56 +294,159 @@ function getRandomColor() {
     var s = 0.7
     var v = 0.8 + (Math.random()*0.1);
 
-    var rgb = hsv_to_rgb(h, s, v);
-
-    return "#" + rgb.map(function(c){ return c.toString(16);}).join("");
+    return hsv_to_rgb(h, s, v);
 }
 
-function buildCategoryChart(){
-	var ct_aggregate = {};
-	var c_ids = [];
+function createAggregate(entries, aggregate_function, label_function, color_function, value_function){
+	var aggregate = {};
 	var sum = 0;
+
+	if (!color_function) color_function = getRandomColor;
+	if (!value_function) value_function = function(entry){return entry.amount;};
 
 	for (var i in entries){
 		var entry = entries[i];
 		
 		if ((entry.flow === -1) && (entry.category_id !== 20000)) {
-			var c_id =  entry.category_id;
-			if (ct_aggregate[c_id]){
-				ct_aggregate[c_id] += entry.amount;
+			
+			var a_id = aggregate_function(entry);
+			var val = value_function(entry);
+
+			if (aggregate[a_id]){
+				aggregate[a_id].value += val;
 			} else {
-				ct_aggregate[c_id] = entry.amount;
-				c_ids.push(c_id);
+				aggregate[a_id] = {
+					"label": label_function(entry),
+					"value": val
+				};
 			}
 
-			sum += entry.amount;
+			sum += val;
 		}
 	}
 
-	c_ids.sort();
+	var result = {
+		"labels": [],
+		"data": [],
+		"colors": [],
+		"sum": sum
+	};
 
-	var labels = [];
-	var data = [];
-	var color = [];
 
-	for (var x in c_ids){
-		var c_id = c_ids[x];
+	var ids = Object.keys(aggregate).sort();
 
-		labels.push(categories[c_id].name);
-		data.push(ct_aggregate[c_id]);
-		color.push(getRandomColor());
+	for (var x in ids){
+		var id = ids[x];
+
+		result.labels.push(aggregate[id].label);
+		result.data.push(aggregate[id].value);
+		result.colors.push(color_function(aggregate[id], sum));
 	}
+
+	return result;
+}
+
+function createSortedAggregate(entries, aggregate_function, label_function, value_function){
+	if (!value_function) value_function = function(entry){return entry.amount;};
+
+	var data = [0];
+	var last_id= aggregate_function(entries[0]);
+	var labels = [label_function(entries[0])];
+	var sum = 0; n = 0;
+
+	for (var i in entries){
+		var entry = entries[i];
+
+		if ((entry.flow === -1) && (entry.category_id !== 20000)) {
+			var a_id = aggregate_function(entry);
+			var val = value_function(entry);
+
+			if (last_id === a_id){
+				data[n] += val;
+			} else {
+				data.push(val);
+				last_id = a_id;
+				labels.push(label_function(entry));
+				n++;
+			}
+
+			sum += val;
+		}
+	}
+
+	return {
+		"labels": labels,
+		"data": data,
+		"sum": sum
+	};
+}
+
+function buildTimelineChart(){
+	var color = hsv_to_rgb(0, 0.6, 0.9);
+	var result = createSortedAggregate(entries, function(entry){ 
+					return entry.entry_date;
+				}, function (entry){
+					return entry.entry_date;
+				});
+
+	new Chart($("#stat"), {
+		"type":"line",
+		"data": {
+			"labels": result.labels,
+			"datasets":[
+				{
+					"label": "expense",
+					"data": result.data,
+					"backgroundColor": "rgba(0,0,0,0)",
+					"borderColor": color
+				}
+			]
+		},
+		"options": statChartOptions				
+	});
+}
+
+function buildTimeDistChart(){
+	var color = hsv_to_rgb(0, 0.6, 0.9);
+	var result = createAggregate(entries, function(entry){ 
+					return moment(entry.entry_date).format("d");
+				}, function (entry){
+					return moment(entry.entry_date).format("dddd");
+				});
+
+	new Chart($("#stat"), {
+		"type":"bar",
+		"data": {
+			"labels": result.labels,
+			"datasets":[
+				{
+					"label": "Expense",
+					"data": result.data,
+					"backgroundColor": color,
+				}
+			]
+		},
+		"options": statChartOptions				
+	});
+}
+
+function buildCategoryChart(){
+
+	var result = createAggregate(entries, function(entry){
+					return entry.category_id;
+				}, function(entry){
+					return categories[entry.category_id].name;
+				});
 
 	new Chart($("#stat"), {
 		"type":"doughnut",
 		"data": {
-			"labels": labels,
+			"labels": result.labels,
 			"datasets":[
 				{
-					"label": "expense",
-					"data": data,
-					"backgroundColor": color,
-					"sum": sum
+					"data": result.data,
+					"backgroundColor": result.colors,
+					"sum": result.sum
 				}
 			]
 		},
@@ -389,7 +456,7 @@ function buildCategoryChart(){
 					"label": function(tooltipItems, data) { 
 						var dataset = data.datasets[tooltipItems.datasetIndex];
 						var amount = dataset.data[tooltipItems.index];
-						var percentage = Math.round(10000 * amount / dataset.sum) / 100;
+						var percentage = Math.round(100 * amount / dataset.sum);
 						var label = data.labels[tooltipItems.index];
 
 						return label + ": " + formatMoney(amount) + " (" + percentage +"%)";
