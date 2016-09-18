@@ -23,5 +23,7 @@
 	};
 
 	var categories = {{ stringify(categoryDict) | safe }};
+	var category_groups = {{ stringify(groups) | safe }};
+	var category_group_ids = Object.keys(category_groups).map(function (e) { return parseInt(e);});
 	var entries = {{ stringify(cashflow) | safe }}
 </script>

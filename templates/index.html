@@ -21,7 +21,7 @@
 
 
 			$("#flowinput").on("changed.bs.select", changeFlowChoice);
-			$("#chart-picker").on("changed.bs.select", changeChartType);
+			$("#chart-picker").on("changed.bs.select", redrawChart);
 			$(".numinput").keypress(validateNumberTextbox);
 
 			changeFlowChoice();
@@ -194,13 +194,13 @@
 		<div id="statistics" class="tab-pane center">
 			<div class="statistic-tab-container">
 				<select id="chart-picker" class="selectpicker form-control" data-width="auto">
-					<option value="timeline">Timeline</option>
+					<option value="timeline" selected>Timeline</option>
 					<option value="timedist">Time Distribution</option>
 					<option value="category">Category Distribution</option>
 				</select>
 
 				<select id="timeline-picker" class="selectpicker form-control hidden" data-width="auto">
-					<option value="daily">Daily</option>
+					<option value="daily" selected>Daily</option>
 					<option value="weekly">Weekly</option>
 					<option value="monthly">Monthly</option>
 					<option value="yearly">Yearly</option>

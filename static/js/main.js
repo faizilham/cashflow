@@ -253,28 +253,16 @@ var statChartOptions = {
 	}
 };
 
-var CHARTTYPE = {
-	"timeline": "timeline",
-	"timedist": "timedist",
-	"category": "category"
-};
-
-var currentChartType = CHARTTYPE.timeline;
 
 function redrawChart(){
 	$("#stat").remove();
 	$("#canvas-wrapper").html('<canvas id="stat"></canvas>');
 
-	switch(currentChartType){
-		case CHARTTYPE.timeline: buildTimelineChart(); break;
-		case CHARTTYPE.timedist: break;
-		case CHARTTYPE.category: buildCategoryChart(); break;
+	switch($("#chart-picker").val()){
+		case "timeline": buildTimelineChart(); break;
+		case "timedist": break;
+		case "category": buildCategoryChart(); break;
 	}
-}
-
-function changeChartType () {
-	currentChartType = $(this).val();
-	redrawChart();
 }
 
 function buildTimelineChart(){
@@ -315,18 +303,43 @@ function buildTimelineChart(){
 	});
 }
 
+function hsv_to_rgb(h, s, v){
+	var h_i = Math.floor(h*6);
+	var f = h*6 - h_i;
+
+	var p = v * (1 - s);
+	var q = v * (1 - f*s);
+	var t = v * (1 - (1 - f) * s);
+	var rgb;
+
+	switch(h_i){
+		case 0: rgb = [v, t, p]; break;
+		case 1: rgb = [q, v, p]; break;
+		case 2: rgb = [p, v, t]; break;
+		case 3: rgb = [p, q, v]; break;
+		case 4: rgb = [t, p, v]; break;
+		case 5: rgb = [v, p, q]; break;
+	}
+
+	return rgb.map(function(c){ return Math.floor(c*256); });
+}
+
 function getRandomColor() {
-    var letters = '0123456789ABCDEF'.split('');
-    var color = '#';
-    for (var i = 0; i < 6; i++ ) {
-        color += letters[Math.floor(Math.random() * 16)];
-    }
-    return color;
+    var phi_conjugate = 0.618033988749895;
+    var h = (Math.random() + phi_conjugate) % 1;
+    var s = 0.7
+    var v = 0.8 + (Math.random()*0.1);
+
+    var rgb = hsv_to_rgb(h, s, v);
+
+    return "#" + rgb.map(function(c){ return c.toString(16);}).join("");
 }
 
 function buildCategoryChart(){
 	var ct_aggregate = {};
+	var c_ids = [];
 	var sum = 0;
+
 	for (var i in entries){
 		var entry = entries[i];
 		
@@ -336,20 +349,25 @@ function buildCategoryChart(){
 				ct_aggregate[c_id] += entry.amount;
 			} else {
 				ct_aggregate[c_id] = entry.amount;
+				c_ids.push(c_id);
 			}
 
 			sum += entry.amount;
 		}
 	}
 
+	c_ids.sort();
+
 	var labels = [];
 	var data = [];
 	var color = [];
 
-	for (var c_id in ct_aggregate){
+	for (var x in c_ids){
+		var c_id = c_ids[x];
+
 		labels.push(categories[c_id].name);
 		data.push(ct_aggregate[c_id]);
-		color.push(getRandomColor())
+		color.push(getRandomColor());
 	}
 
 	new Chart($("#stat"), {

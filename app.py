@@ -28,7 +28,7 @@ def index_page():
 	for account in accounts:
 		account["current"] = sum((entry["flow"] * entry["amount"]) for entry in cashflow if entry["account"] == account["name"])
 
-	return render_template("index.html", format_money=format_money, stringify=json.dumps, cashflow=cashflow, categories=cache.categories, categoryDict=cache.categoryDict, accounts=accounts)
+	return render_template("index.html", format_money=format_money, stringify=json.dumps, cashflow=cashflow, categories=cache.categories, groups=cache.groups, categoryDict=cache.categoryDict, accounts=accounts)
 
 if __name__ == "__main__":
 	app.run(port=config["port"])
