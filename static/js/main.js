@@ -463,7 +463,7 @@ function buildCategoryChart(){
 				return agg.count / days;
 			};
 			chartType = "bar";
-			formatFunction = frequencyFormat;
+			formatFunction = function (v) { return frequencyFormat(v, "day");};
 		}
 		break;
 	}
@@ -484,7 +484,9 @@ function buildCategoryChart(){
 	}
 }
 
-function frequencyFormat(val){
+function frequencyFormat(val, unit, plural){
+	if (!plural) plural = unit + "s";
+
 	var e = 0.0000000001;
 
 	if (Math.abs(val) < e) return "Never";
@@ -493,9 +495,9 @@ function frequencyFormat(val){
 	if (Math.abs(d - 1) < e){
 		return "Everyday";
 	} else if (d < 1) {
-		return (Math.round(100*val)/100) + " times a day";
+		return (Math.round(100*val)/100) + " times a " + unit;
 	} else {
-		return "Every " + (Math.round(100*d)/100) + " days";						
+		return "Every " + (Math.round(100*d)/100) + " " + plural;						
 	}
 }
 

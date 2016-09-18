@@ -21,8 +21,19 @@
 
 
 			$("#flowinput").on("changed.bs.select", changeFlowChoice);
-			$("#chart-picker").on("changed.bs.select", redrawChart);
-			$("#category-value-picker").on("changed.bs.select", redrawChart);
+			$("#chart-picker").on("changed.bs.select", function(){
+				
+				if ($(this).val() === "category"){
+					$("#category-value-picker").selectpicker("show");
+				} else {
+					$("#category-value-picker").selectpicker("hide");
+				}
+
+				//$("#category-value-picker").selectpicker('refresh');
+
+				redrawChart();
+			});
+			$("#category-value-picker").on("changed.bs.select", redrawChart).selectpicker('hide');
 			$(".numinput").keypress(validateNumberTextbox);
 
 			changeFlowChoice();
