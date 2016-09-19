@@ -338,6 +338,7 @@ function createAggregate(entries, id_function, label_function, aggregate_functio
 	var result = {
 		"labels": [],
 		"data": [],
+		"ids": [],
 		"colors": []
 	};
 
@@ -348,6 +349,7 @@ function createAggregate(entries, id_function, label_function, aggregate_functio
 		var id = ids[x];
 
 		result.labels.push(aggregate[id].label);
+		result.ids.push(id);
 		result.data.push(aggregate_function(aggregate[id]));
 		result.colors.push(getRandomColor());
 	}
@@ -395,7 +397,7 @@ function buildTimelineChart(){
 					return entry.entry_date;
 				});
 
-	 TimelineChart(result.labels, result.data, "Timeline");
+	 TimelineChart(result.labels, result.data);
 }
 
 function getAmountOfWeekDays(date1, date2, weekday) {
@@ -416,17 +418,22 @@ function buildTimeDistChart(){
 				}, function (agg){
 					return Math.round(agg.value / getAmountOfWeekDays(startDate, endDate, agg.id));
 				});
-	BarChart(result.labels, result.data, "Day Distribution");
+	BarChart(result.labels, result.data);
 }
 
 function buildCategoryChart(){
 	var valueOption = $("#category-value-picker").val();
 	var aggregate_function = null; 
 	var chartType = "doughnut"; var formatFunction = null;
-	var title;
+	var title; var groupCategory = false; var drilldown;
 
 	switch(valueOption){
 		case "total": title = "Category Distribution"; break;
+		case "group": {
+			groupCategory = true;
+			title = "Group Category Distribution"; 
+		}
+		break;
 		case "daily": {
 
 			var startDate = new moment(entries[0].entry_date);
@@ -435,7 +442,7 @@ function buildCategoryChart(){
 
 			chartType = "bar";
 			aggregate_function = function (agg){
-				return Math.round(agg.value / days);
+				return agg.value / days;
 			};
 
 			title = "Daily Average";
@@ -471,13 +478,49 @@ function buildCategoryChart(){
 				}, aggregate_function);	
 
 	if (chartType === "bar"){
-		BarChart(result.labels, result.data, title, formatFunction);
+		BarChart(result.labels, result.data, formatFunction);
 	} else {
-		DoughnutChart(result.labels, result.data, title, formatFunction);	
+		
+
+		if (groupCategory){
+			var data = result.data.map(function(v, i){ return [result.labels[i], v]; });
+
+
+			var lastGroupId = null; var n = -1; var grouplist = []; drilldown = [];
+
+			for (var x in result.ids){
+				var id = result.ids[x];
+				var g_id = Math.floor(id/100);
+
+				if (g_id !== lastGroupId){
+					lastGroupId = g_id;
+					grouplist.push({
+						"name": category_groups[g_id].name,
+						"y": data[x][1],
+						"drilldown": g_id
+					});
+
+					drilldown.push({
+						"id": g_id,
+						"data": [data[x]]
+					});
+					n++;
+				} else {
+					grouplist[n].y+=data[x][1];
+					drilldown[n].data.push(data[x]);
+				}
+			}
+
+			result.data = grouplist;
+		} else {
+			result.data = result.data.map(function(v, i){ return {name: result.labels[i], y: v}; });
+		}
+
+		DoughnutChart(result.data, formatFunction, drilldown);	
 	}
 }
 
-function TimelineChart(labels, data, title, formatFunction){
+function TimelineChart(labels, data, formatFunction){
 	var yAxisOpt = {};
 	var seriesName, labelFormatter = undefined;
 
@@ -500,32 +543,44 @@ function TimelineChart(labels, data, title, formatFunction){
 
 	$('#chart-wrapper').highcharts({
 		chart: {
-			type: 'line'
+			zoomType: 'x'
 		},
 		title: {
-			text: title
+			text: ""
 		},
 		xAxis: {
-			categories: labels,
+			type: 'datetime',
+			dateTimeLabelFormats: {
+	           day: '%d %b %Y'    //ex- 01 Jan 2016
+	        }
 		},
 		yAxis: yAxisOpt,
+		//tooltip: {enabled: false},
+		plotOptions: {
+			line:{
+				marker: {
+                    radius: 2
+                },
+                lineWidth: 1,
+			}
+		},
 		series: [
 			{
 				name: seriesName,
-				data: data,
-				dataLabels: {
-					enabled: true,
-					formatter: labelFormatter
-				}
+				data: data.map(function(v,i){ 
+					return [moment.utc(labels[i]).valueOf(), v];
+				})
 			}
 		]
 	});
+
+	$("#chart-wrapper svg>text").last().hide();
 }
 
 
-function BarChart(labels, data, title, formatFunction){
+function BarChart(labels, data, formatFunction){
 	var yAxisOpt = {};
-	var seriesName, labelFormatter = undefined;
+	var seriesName, labelFormatter;
 
 	if (!formatFunction) formatFunction = "expense";
 
@@ -538,7 +593,7 @@ function BarChart(labels, data, title, formatFunction){
 				text: "Rupiah"
 			};
 
-			labelFormatter =  function () { return formatMoney(this.y);};
+			labelFormatter = formatMoney;
 		}
 		break;
 		case "freq": {
@@ -547,7 +602,7 @@ function BarChart(labels, data, title, formatFunction){
 				formatter: function () { return frequencyFormat(this.value, formats[1]);}
 			};
 
-			labelFormatter =  function () { return frequencyFormatShort(this.y, formats[1]);};
+			labelFormatter =  function (val) { return frequencyFormatShort(val, formats[1]);};
 
 			yAxisOpt.title = {
 				text: ""
@@ -561,27 +616,43 @@ function BarChart(labels, data, title, formatFunction){
 		chart: {
 			type: 'column'
 		},
+
 		title: {
-			text: title
+			text: ""
 		},
+
 		xAxis: {
 			categories: labels
 		},
 		yAxis: yAxisOpt,
+		plotOptions: {
+			column:{
+				dataLabels: {
+					enabled: true,
+					formatter: function () { return labelFormatter(this.y);},
+				}
+			}
+		},
+
+		tooltip: {
+			// formatter: function() {
+			// 	return this.x + '<br/><span style="color:'+ this.series.color +'">\u25CF</span> ' + this.series.name + ": <b>" + labelFormatter(this.y) + "</b>" ;
+			// }
+			enabled: false
+		},
+
+
 		series: [
 			{
 				name: seriesName,
-				data: data,
-				dataLabels: {
-					enabled: true,
-					formatter: labelFormatter
-				}
+				data: data
 			}
 		]
 	});
+	$("#chart-wrapper svg>text").last().hide();
 }
 
-function DoughnutChart(labels, data, title, formatFunction){
+function DoughnutChart(data, formatFunction, drilldown){
 	var seriesName, labelFormatter = undefined;
 
 	if (!formatFunction) formatFunction = "expense";
@@ -591,34 +662,47 @@ function DoughnutChart(labels, data, title, formatFunction){
 	switch (formats[0]){
 		case "expense": {
 			seriesName = "Expense";
-			labelFormatter =  function () { return this.point.name + ": " + percentageFormat(this.point.percentage);};
+			labelFormatter = percentageFormat;
 		}
 		break;
 	}
 
 
-	$('#chart-wrapper').highcharts({
+	var options = {
 		chart: {
 			type: 'pie'
 		},
 		title: {
-			text: title
+			text: "",
 		},
 		plotOptions: {
 			pie:{
-				allowPointSelect: true,
 				dataLabels: {
 					enabled: true,
-					formatter: labelFormatter,
+					formatter: function () { return this.point.name + ": " + labelFormatter(this.point.percentage);},
 				},
 				showInLegend: true
 			}
 		},
+
+		tooltip: {
+			enabled: false
+		},
+
 		series: [
 			{
 				name: seriesName,
-				data: data.map(function(v, i){ return {name: labels[i], y: v}; }),
+				data: data,
 			}
 		]
-	});
+	};
+
+	if (drilldown){
+		options.drilldown = {
+			series: drilldown
+		};
+	}
+
+	$('#chart-wrapper').highcharts(options);
+	$("#chart-wrapper svg>text").last().hide();
 }

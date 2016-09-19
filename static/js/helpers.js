@@ -5,6 +5,8 @@ function formatMoney(amount){
 		amount = -amount;
 	}
 
+	amount = Math.round(amount);
+
 	stramount = "";
 	while (amount >= 1000) {
 		thousands = String(amount % 1000)

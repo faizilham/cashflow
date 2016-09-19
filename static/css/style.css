@@ -18,10 +18,6 @@
 	width:750px; height:500px
 }
 
-#chart-wrapper svg>text:last-child{
-	display: none;
-}
-
 .statistic-tab-container{
 	display: inline-block;
 	text-align:right
