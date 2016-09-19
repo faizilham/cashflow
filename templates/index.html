@@ -190,14 +190,18 @@
 			<table class="summary">
 				<tr>
 					<th></th>
-					<th>Total</th>
-					<th>This Month</th>
+					<th>Total Fund</th>
+					<th>Credit</th>
+					<th>Debit</th>
+					<th>Balance</th>
 				</tr>
 				{% for account in accounts %}
 				<tr class="accountinfo">
 					<th>{{ account["name"]}}</th>
 					<td id="{{ account['name']}}-total">{{ format_money(account["fund"]) }}</td>
-					<td id="{{ account['name']}}-monthly" {% if account["current"] < 0 %} class="debit" {% endif %}>{{ format_money(account["current"]) }}</td>
+					<td id="{{ account['name']}}-current-credit">{{ format_money(account["current-credit"]) }}</td>
+					<td id="{{ account['name']}}-current-debit" class="debit">{{ format_money(account["current-debit"]) }}</td>
+					<td id="{{ account['name']}}-current" {% if account["current"] < 0 %} class="debit" {% endif %}>{{ format_money(account["current"]) }}</td>
 				</tr>
 				{% endfor %}
 			</table>

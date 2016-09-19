@@ -16,11 +16,7 @@
 
 
 <script type="text/javascript">
-	var accounts = {
-	{% for account in accounts %}
-		"{{ account['name'] }}": {"fund": {{ account["fund"] }}, "current": {{ account["current"] }}},
-	{% endfor %}
-	};
+	var accounts = {{ stringify(accountDict) | safe }};
 
 	var categories = {{ stringify(categoryDict) | safe }};
 	var category_groups = {{ stringify(groups) | safe }};

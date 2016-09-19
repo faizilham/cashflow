@@ -18,21 +18,34 @@ function validateNumberTextbox(e){
 }
 
 /**** VIEW CHANGER ****/
-function calculateSummary(account, absoluteAmount){
-	var monthly = $("#" + account + "-monthly");
-
+function calculateSummary(account, absoluteAmount, del){
 	accounts[account].fund += absoluteAmount;
 	accounts[account].current += absoluteAmount;
 
-	$("#" + account + "-total").html(formatMoney(accounts[account].fund));
-	monthly.html(formatMoney(accounts[account].current));
+	var target;
 
-	
-	if (accounts[account].current < 0){
-		monthly.addClass("debit");
+	if (!del){
+		target = absoluteAmount > 0 ? "credit" : "debit";
 	} else {
-		monthly.removeClass("debit");
+		target = absoluteAmount < 0 ? "credit" : "debit";
 	}
+
+	accounts[account]["current-"+target] += absoluteAmount;
+
+	$("#" + account + "-total").html(formatMoney(accounts[account].fund));
+
+	function formatSummaryTab(tabname){
+		var amount = accounts[account][tabname];
+
+		var tab = $("#" + account + "-" + tabname);
+		tab.html(formatMoney(amount));
+
+		if (amount < 0) tab.addClass("debit");
+		else tab.removeClass("debit");
+	}
+
+	formatSummaryTab("current");
+	formatSummaryTab("current-"+target);
 }
 
 function changeFlowChoice() {
@@ -169,7 +182,7 @@ function deleteEntry(_id, account, flow, amount){
 			if (data.message) {
 				alert(data.message);
 			} else {
-				calculateSummary(account, -(flow * amount));
+				calculateSummary(account, -(flow * amount), true);
 				deleteRow(_id);
 			}
 						
@@ -441,7 +454,7 @@ function buildCategoryChart(){
 			var endDate = new moment(entries[entries.length - 1].entry_date);
 			var days = endDate.diff(startDate, 'days') + 1;
 
-			
+			chartType = "bar";
 			aggregate_function = function (agg){
 				return Math.round(agg.value / days);
 			};

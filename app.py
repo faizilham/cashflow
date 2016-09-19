@@ -25,10 +25,22 @@ def index_page():
 
 	cashflow = api.get_entries(db, request.args)
 
-	for account in accounts:
-		account["current"] = sum((entry["flow"] * entry["amount"]) for entry in cashflow if entry["account"] == account["name"])
+	account_dict = {}
 
-	return render_template("index.html", format_money=format_money, stringify=json.dumps, cashflow=cashflow, categories=cache.categories, groups=cache.groups, categoryDict=cache.categoryDict, accounts=accounts)
+	for i, account in enumerate(accounts):
+		account["current-credit"] = 0
+		account["current-debit"] = 0
+		account["current"] = 0
+		account_dict[account["name"]] = account
+
+	for entry in cashflow:
+		acc_name = entry["account"]
+		flow_name = "credit" if entry["flow"] == 1 else "debit"
+
+		account_dict[acc_name]["current-" + flow_name] += entry["flow"] * entry["amount"]
+		account_dict[acc_name]["current"] += entry["flow"] * entry["amount"]
+
+	return render_template("index.html", format_money=format_money, stringify=json.dumps, cashflow=cashflow, categories=cache.categories, groups=cache.groups, categoryDict=cache.categoryDict, accounts=accounts, accountDict=account_dict)
 
 if __name__ == "__main__":
 	app.run(port=config["port"])
