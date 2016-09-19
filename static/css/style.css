@@ -14,8 +14,12 @@
 
 /**** STATISTIC CHART ****/
 
-#canvas-wrapper{
+#chart-wrapper{
 	width:750px; height:500px
+}
+
+#chart-wrapper svg>text:last-child{
+	display: none;
 }
 
 .statistic-tab-container{

@@ -268,9 +268,6 @@ var statChartOptions = {
 
 
 function redrawChart(){
-	$("#stat").remove();
-	$("#canvas-wrapper").html('<canvas id="stat"></canvas>');
-
 	switch($("#chart-picker").val()){
 		case "timeline": buildTimelineChart(); break;
 		case "timedist": buildTimeDistChart(); break;
@@ -398,21 +395,7 @@ function buildTimelineChart(){
 					return entry.entry_date;
 				});
 
-	new Chart($("#stat"), {
-		"type":"line",
-		"data": {
-			"labels": result.labels,
-			"datasets":[
-				{
-					"label": "expense",
-					"data": result.data,
-					"backgroundColor": "rgba(0,0,0,0)",
-					"borderColor": color
-				}
-			]
-		},
-		"options": statChartOptions				
-	});
+	 TimelineChart(result.labels, result.data, "Timeline");
 }
 
 function getAmountOfWeekDays(date1, date2, weekday) {
@@ -426,7 +409,6 @@ function buildTimeDistChart(){
 	var startDate = new moment(entries[0].entry_date);
 	var endDate = new moment(entries[entries.length - 1].entry_date);
 
-	var color = hsv_to_rgb(0, 0.6, 0.9);
 	var result = createAggregate(entries, function(entry){ 
 					return moment(entry.entry_date).weekday();
 				}, function (entry){
@@ -434,20 +416,17 @@ function buildTimeDistChart(){
 				}, function (agg){
 					return Math.round(agg.value / getAmountOfWeekDays(startDate, endDate, agg.id));
 				});
-
-	// var sum = 0;
-	// for (var i in result.data) sum += result.data[i];
-
-	BarChart(result.labels, result.data, color);
-	
+	BarChart(result.labels, result.data, "Day Distribution");
 }
 
 function buildCategoryChart(){
 	var valueOption = $("#category-value-picker").val();
 	var aggregate_function = null; 
 	var chartType = "doughnut"; var formatFunction = null;
+	var title;
 
 	switch(valueOption){
+		case "total": title = "Category Distribution"; break;
 		case "daily": {
 
 			var startDate = new moment(entries[0].entry_date);
@@ -458,12 +437,15 @@ function buildCategoryChart(){
 			aggregate_function = function (agg){
 				return Math.round(agg.value / days);
 			};
+
+			title = "Daily Average";
 		} break;
 		case "price": {
 			aggregate_function = function (agg){
 				return agg.value / agg.count;
 			};
 			chartType = "bar";
+			title = "Average Price Per Purchase";
 		}
 		break;
 		case "frequency": {
@@ -476,7 +458,8 @@ function buildCategoryChart(){
 				return agg.count / days;
 			};
 			chartType = "bar";
-			formatFunction = function (v) { return frequencyFormat(v, "day");};
+			formatFunction = "freq.day";
+			title = "Purchase Frequency";
 		}
 		break;
 	}
@@ -488,93 +471,154 @@ function buildCategoryChart(){
 				}, aggregate_function);	
 
 	if (chartType === "bar"){
-		BarChart(result.labels, result.data, hsv_to_rgb(0, 0.6, 0.9), formatFunction);
+		BarChart(result.labels, result.data, title, formatFunction);
 	} else {
-		var sum = 0;
-		for (var i in result.data) sum += result.data[i];
-
-		DoughnutChart(result.labels, result.data, result.colors, sum, formatFunction);	
+		DoughnutChart(result.labels, result.data, title, formatFunction);	
 	}
 }
 
-function frequencyFormat(val, unit, plural){
-	if (!plural) plural = unit + "s";
+function TimelineChart(labels, data, title, formatFunction){
+	var yAxisOpt = {};
+	var seriesName, labelFormatter = undefined;
 
-	var e = 0.0000000001;
+	if (!formatFunction) formatFunction = "expense";
 
-	if (Math.abs(val) < e) return "Never";
+	var formats = formatFunction.split(".");
 
-	var d = 1 / val;
-	if (Math.abs(d - 1) < e){
-		return "Everyday";
-	} else if (d < 1) {
-		return (Math.round(100*val)/100) + " times a " + unit;
-	} else {
-		return "Every " + (Math.round(100*d)/100) + " " + plural;						
+	switch (formats[0]){
+		case "expense": {
+			seriesName = "Expense";
+			yAxisOpt.title = {
+				text: "Rupiah"
+			};
+
+			labelFormatter =  function () { return formatMoney(this.y);};
+		}
+		break;
 	}
-}
 
-function BarChart(labels, data, colors, formatFunction){
-	if (!formatFunction) formatFunction = formatMoney;
-	new Chart($("#stat"), {
-		"type":"bar",
-		"data": {
-			"labels": labels,
-			"datasets":[
-				{
-					"label": "Expense",
-					"data": data,
-					"backgroundColor": colors,
-				}
-			]
+
+	$('#chart-wrapper').highcharts({
+		chart: {
+			type: 'line'
 		},
-		"options": {
-			"scales": {
-				"yAxes": [{
-					"ticks": {
-						"beginAtZero":true,
-						"callback": formatFunction
-					}
-				}]
-			},
-
-			"tooltips": {
-				"callbacks": {
-					"label": function(tooltipItems, data) { return formatFunction(tooltipItems.yLabel);}
+		title: {
+			text: title
+		},
+		xAxis: {
+			categories: labels,
+		},
+		yAxis: yAxisOpt,
+		series: [
+			{
+				name: seriesName,
+				data: data,
+				dataLabels: {
+					enabled: true,
+					formatter: labelFormatter
 				}
 			}
-		}		
+		]
 	});
 }
 
-function DoughnutChart(labels, data, colors, sum, formatFunction){
-	if (!formatFunction) formatFunction = formatMoney;
 
-	new Chart($("#stat"), {
-		"type":"doughnut",
-		"data": {
-			"labels": labels,
-			"datasets":[
-				{
-					"data": data,
-					"backgroundColor": colors,
-					"sum": sum
-				}
-			]
+function BarChart(labels, data, title, formatFunction){
+	var yAxisOpt = {};
+	var seriesName, labelFormatter = undefined;
+
+	if (!formatFunction) formatFunction = "expense";
+
+	var formats = formatFunction.split(".");
+
+	switch (formats[0]){
+		case "expense": {
+			seriesName = "Expense";
+			yAxisOpt.title = {
+				text: "Rupiah"
+			};
+
+			labelFormatter =  function () { return formatMoney(this.y);};
+		}
+		break;
+		case "freq": {
+			seriesName = "Frequency";
+			yAxisOpt.labels = {
+				formatter: function () { return frequencyFormat(this.value, formats[1]);}
+			};
+
+			labelFormatter =  function () { return frequencyFormatShort(this.y, formats[1]);};
+
+			yAxisOpt.title = {
+				text: ""
+			};
+		}
+		break;
+	}
+
+
+	$('#chart-wrapper').highcharts({
+		chart: {
+			type: 'column'
 		},
-		"options": {
-			"tooltips": {
-				"callbacks": {
-					"label": function(tooltipItems, data) { 
-						var dataset = data.datasets[tooltipItems.datasetIndex];
-						var amount = dataset.data[tooltipItems.index];
-						var percentage = Math.round(100 * amount / dataset.sum);
-						var label = data.labels[tooltipItems.index];
-
-						return label + ": " + formatFunction(amount) + " (" + percentage +"%)";
-					}
+		title: {
+			text: title
+		},
+		xAxis: {
+			categories: labels
+		},
+		yAxis: yAxisOpt,
+		series: [
+			{
+				name: seriesName,
+				data: data,
+				dataLabels: {
+					enabled: true,
+					formatter: labelFormatter
 				}
 			}
+		]
+	});
+}
+
+function DoughnutChart(labels, data, title, formatFunction){
+	var seriesName, labelFormatter = undefined;
+
+	if (!formatFunction) formatFunction = "expense";
+
+	var formats = formatFunction.split(".");
+
+	switch (formats[0]){
+		case "expense": {
+			seriesName = "Expense";
+			labelFormatter =  function () { return this.point.name + ": " + percentageFormat(this.point.percentage);};
 		}
+		break;
+	}
+
+
+	$('#chart-wrapper').highcharts({
+		chart: {
+			type: 'pie'
+		},
+		title: {
+			text: title
+		},
+		plotOptions: {
+			pie:{
+				allowPointSelect: true,
+				dataLabels: {
+					enabled: true,
+					formatter: labelFormatter,
+				},
+				showInLegend: true
+			}
+		},
+		series: [
+			{
+				name: seriesName,
+				data: data.map(function(v, i){ return {name: labels[i], y: v}; }),
+			}
+		]
 	});
 }
