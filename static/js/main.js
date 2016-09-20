@@ -71,8 +71,8 @@ function changeFlowChoice() {
 	categoryinput.selectpicker('refresh');
 }
 
-function scrollCashflow(last){
-	$(".cashflow").scrollTop(last.position().top);
+function scrollCashflow(){
+	$('.cashflow').animate({scrollTop: $('.cashflow').prop("scrollHeight")}, 0);
 }
 
 function refreshEntries(last_id, last_date, new_date){
@@ -98,7 +98,7 @@ function refreshEntries(last_id, last_date, new_date){
 		}));
 
 		newEntry.insertBefore($("#tranchor"));
-		scrollCashflow(newEntry);
+		scrollCashflow();
 
 		redrawChart();
 	});
@@ -643,7 +643,7 @@ function DoughnutChart(data, formatFunction, drilldown){
 		},
 
 		tooltip: {
-			enabled: false
+		//	enabled: false
 		},
 
 		series: [
