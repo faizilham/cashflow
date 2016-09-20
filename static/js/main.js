@@ -22,6 +22,9 @@ function calculateSummary(account, absoluteAmount, del){
 	accounts[account].fund += absoluteAmount;
 	accounts[account].current += absoluteAmount;
 
+	accounts._summary.fund += absoluteAmount;
+	accounts._summary.current += absoluteAmount;
+
 	var target;
 
 	if (!del){
@@ -32,9 +35,8 @@ function calculateSummary(account, absoluteAmount, del){
 
 	accounts[account]["current-"+target] += absoluteAmount;
 
-	$("#" + account + "-total").html(formatMoney(accounts[account].fund));
 
-	function formatSummaryTab(tabname){
+	function formatSummaryTab(account, tabname){
 		var amount = accounts[account][tabname];
 
 		var tab = $("#" + account + "-" + tabname);
@@ -44,8 +46,12 @@ function calculateSummary(account, absoluteAmount, del){
 		else tab.removeClass("debit");
 	}
 
-	formatSummaryTab("current");
-	formatSummaryTab("current-"+target);
+	formatSummaryTab(account, "fund");
+	formatSummaryTab(account, "current");
+	formatSummaryTab(account, "current-"+target);
+	formatSummaryTab("_summary", "fund");
+	formatSummaryTab("_summary", "current");
+
 }
 
 function changeFlowChoice() {

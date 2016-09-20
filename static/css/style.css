@@ -4,12 +4,16 @@
 	width: 100%;
 }
 
-.summary td, .summary td{
-	padding: 0.25em 0.25em;
+.summary td, .summary th{
+	padding: 0.5em 0.5em;
 }
 
 .summary .accountinfo:nth-child(odd){
 	background: #eee;
+}
+
+.summary .trsummary {
+	border-top: 1px solid #666;
 }
 
 /**** STATISTIC CHART ****/

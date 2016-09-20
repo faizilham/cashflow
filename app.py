@@ -27,11 +27,14 @@ def index_page():
 
 	account_dict = {}
 
+	total_fund = 0; total_balance = 0;
+
 	for i, account in enumerate(accounts):
 		account["current-credit"] = 0
 		account["current-debit"] = 0
 		account["current"] = 0
 		account_dict[account["name"]] = account
+		total_fund += account["fund"]
 
 	for entry in cashflow:
 		acc_name = entry["account"]
@@ -39,8 +42,11 @@ def index_page():
 
 		account_dict[acc_name]["current-" + flow_name] += entry["flow"] * entry["amount"]
 		account_dict[acc_name]["current"] += entry["flow"] * entry["amount"]
+		total_balance += entry["flow"] * entry["amount"]
 
-	return render_template("index.html", format_money=format_money, stringify=json.dumps, cashflow=cashflow, categories=cache.categories, groups=cache.groups, categoryDict=cache.categoryDict, accounts=accounts, accountDict=account_dict)
+	account_summary = {"current": total_balance, "fund": total_fund};
+
+	return render_template("index.html", format_money=format_money, stringify=json.dumps, cashflow=cashflow, categories=cache.categories, groups=cache.groups, categoryDict=cache.categoryDict, accounts=accounts, accountDict=account_dict, account_summary=account_summary)
 
 if __name__ == "__main__":
 	app.run(port=config["port"])

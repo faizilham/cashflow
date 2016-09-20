@@ -19,6 +19,7 @@
 
 <script type="text/javascript">
 	var accounts = {{ stringify(accountDict) | safe }};
+	accounts._summary = {{ stringify(account_summary) | safe }};
 
 	var categories = {{ stringify(categoryDict) | safe }};
 	var category_groups = {{ stringify(groups) | safe }};

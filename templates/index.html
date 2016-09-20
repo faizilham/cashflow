@@ -198,12 +198,19 @@
 				{% for account in accounts %}
 				<tr class="accountinfo">
 					<th>{{ account["name"]}}</th>
-					<td id="{{ account['name']}}-total">{{ format_money(account["fund"]) }}</td>
+					<td id="{{ account['name']}}-fund">{{ format_money(account["fund"]) }}</td>
 					<td id="{{ account['name']}}-current-credit">{{ format_money(account["current-credit"]) }}</td>
 					<td id="{{ account['name']}}-current-debit" class="debit">{{ format_money(account["current-debit"]) }}</td>
 					<td id="{{ account['name']}}-current" {% if account["current"] < 0 %} class="debit" {% endif %}>{{ format_money(account["current"]) }}</td>
 				</tr>
 				{% endfor %}
+				<tr class="trsummary">
+					<th>Total</th>
+					<td id="_summary-fund">{{ format_money(account_summary["fund"]) }}</td>
+					<td></td>
+					<td></td>
+					<td id="_summary-current" {% if account_summary["current"] < 0 %} class="debit" {% endif %}>{{ format_money(account_summary["current"]) }}</td>
+				</tr>
 			</table>
 		</div>
 
