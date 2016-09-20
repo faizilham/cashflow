@@ -74,6 +74,37 @@ function findWithAttr(array, attr, value) {
 	return -1;
 }
 
+function hsv_to_rgb(h, s, v){
+	var h_i = Math.floor(h*6);
+	var f = h*6 - h_i;
+
+	var p = v * (1 - s);
+	var q = v * (1 - f*s);
+	var t = v * (1 - (1 - f) * s);
+	var rgb;
+
+	switch(h_i){
+		case 0: rgb = [v, t, p]; break;
+		case 1: rgb = [q, v, p]; break;
+		case 2: rgb = [p, v, t]; break;
+		case 3: rgb = [p, q, v]; break;
+		case 4: rgb = [t, p, v]; break;
+		case 5: rgb = [v, p, q]; break;
+	}
+
+	return "#" + rgb.map(function(c){return Math.floor(c*256).toString(16);}).join("");
+}
+
+function getRandomColor() {
+    var phi_conjugate = 0.618033988749895;
+    var h = (Math.random() + phi_conjugate) % 1;
+    var s = 0.7
+    var v = 0.8 + (Math.random()*0.1);
+
+    return hsv_to_rgb(h, s, v);
+}
+
+
 Handlebars.registerHelper("iscredit", function(entry){
 	return entry.flow > 0;
 });
