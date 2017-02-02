@@ -158,7 +158,7 @@ function submitInsert(){
 			calculateSummary(account, flow * amount);
 
 			// reset form
-			$("#dateinput").val(moment().format("YYYY-MM-DD"));
+			//$("#dateinput").val(moment().format("YYYY-MM-DD"));
 			$("#amountinput").val("");
 			$("#detailsinput").val("");
 
@@ -459,6 +459,7 @@ function buildCategoryChart(){
 
 					drilldown.push({
 						"id": g_id,
+						"name": "Expense",
 						"data": [data[x]]
 					});
 					n++;
@@ -592,10 +593,10 @@ function BarChart(labels, data, formatFunction){
 		},
 
 		tooltip: {
-			// formatter: function() {
-			// 	return this.x + '<br/><span style="color:'+ this.series.color +'">\u25CF</span> ' + this.series.name + ": <b>" + labelFormatter(this.y) + "</b>" ;
-			// }
-			enabled: false
+			formatter: function() {
+				return this.x + '<br/><span style="color:'+ this.series.color +'">\u25CF</span> ' + this.series.name + ": <b>" + labelFormatter(this.y) + "</b>" ;
+			}
+			// enabled: false
 		},
 
 
